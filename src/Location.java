@@ -1,5 +1,5 @@
 
-public class Location {
+public class Location implements Movable<Location> {
 	
 	private int x;
 	private int y;
@@ -23,5 +23,9 @@ public class Location {
 
 	public void setY(int y) {
 		this.y = y;
+	}
+
+	@Override public Location move(Move move) {
+		return new Location(x + move.dx, y + move.dy);
 	}
 }
