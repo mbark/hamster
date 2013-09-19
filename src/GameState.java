@@ -5,7 +5,10 @@ import java.util.Scanner;
 
 
 /**
- * Represents a level with an existing board. A board could look like this:
+ * Represents a state of the game, with the current map and the positions of all the
+ * moving objects in it.
+ * <p>
+ * Has a level with an existing board. A board could look like this:
  * <pre>
  * ########
  * #   # .#
@@ -33,7 +36,7 @@ import java.util.Scanner;
  * @author Fredrik Bystam
  *
  */
-public class Level {
+public class GameState {
 	
 	public static final char FREE_SPACE = ' ';
 	public static final char WALL = '#';
@@ -49,42 +52,43 @@ public class Level {
 		List<String> boardStrings = new ArrayList<>();
 		while (s.hasNextLine ())
 			boardStrings.add(s.nextLine());
-		Level l = new Level(boardStrings);
+		GameState l = GameState.createInitialFromInput(boardStrings);
 		System.out.println(l);
 		s.close();
-		System.out.println(l.subLevel(1, 1, 4, 3));
+		System.out.println(l.subGameState(1, 1, 4, 3));
 	}
 	
 	private final char[][] board;
 	
-	/**
-	 * Create a new Level using the given input strings.
-	 * 
-	 * @param boardStrings Strings read as a level map
-	 */
-	public Level (List<String> boardStrings) {
-		board = calculateBoard (boardStrings);
-	}
-	
 	// internal constructor
-	Level (char[][] board) {
+	GameState (char[][] board) {
 		this.board = board;
 	}
 
 	/**
-	 * Create a {@link Level} object as a sub-level of this Level given a
+	 * Create a {@link GameState} object as a sub-level of this GameState given a
 	 * rectangular shape.
 	 * @param x The x-coordinate that will mark the sub-Levels origin
 	 * @param y The y-coordinate that will mark the sub-Levels origin
 	 * @param width The width of the sub-Level
 	 * @param height The height of the sub-Level
-	 * @return A {@link Level} object with a sub-matrix of the original Level
+	 * @return A {@link GameState} object with a sub-matrix of the original Level
 	 */
-	public Level subLevel (int x, int y, int width, int height) {
+	public GameState subGameState (int x, int y, int width, int height) {
 		char[][] subBoard = new char[width][height];
 		for (int row = 0; row < height; row++)
 			subBoard[row] = Arrays.copyOfRange(board[y++], x, x + width);
-		return new Level (subBoard);
+		return new GameState (subBoard);
+	}
+	
+	/**
+	 * Create a new {@link GameState} using the given input strings.
+	 * 
+	 * @param boardStrings Strings read as a level map
+	 */
+	public static GameState createInitialFromInput (List<String> boardStrings)  {
+		char[][] board = calculateBoard (boardStrings);
+		return new GameState (board);
 	}
 	
 	private static char[][] calculateBoard (List<String> boardStrings) {
@@ -97,7 +101,7 @@ public class Level {
 		return board;
 	}
 	
-	private static void fillBoard(char[][] board, List<String> boardStrings) {
+	private static void fillBoard (char[][] board, List<String> boardStrings) {
 		/*
 		 * Fill the board using the board strings.
 		 * 
