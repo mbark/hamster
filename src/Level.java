@@ -43,6 +43,7 @@ public class Level {
 	public static final char BOX = '$';
 	public static final char BOX_ON_GOAL = '*';
 	
+	// very simple test code
 	public static void main(String[] args) {
 		Scanner s = new Scanner (System.in);
 		List<String> boardStrings = new ArrayList<>();
@@ -70,6 +71,15 @@ public class Level {
 		this.board = board;
 	}
 
+	/**
+	 * Create a {@link Level} object as a sub-level of this Level given a
+	 * rectangular shape.
+	 * @param x The x-coordinate that will mark the sub-Levels origin
+	 * @param y The y-coordinate that will mark the sub-Levels origin
+	 * @param width The width of the sub-Level
+	 * @param height The height of the sub-Level
+	 * @return A {@link Level} object with a sub-matrix of the original Level
+	 */
 	public Level subLevel (int x, int y, int width, int height) {
 		char[][] subBoard = new char[width][height];
 		for (int row = 0; row < height; row++)
@@ -88,9 +98,15 @@ public class Level {
 	}
 	
 	private static void fillBoard(char[][] board, List<String> boardStrings) {
+		/*
+		 * Fill the board using the board strings.
+		 * 
+		 * For convenience, free space outside the map will be filled with
+		 * WALL-characters to create a complete, rectangular map matrix.
+		 */
 		for (int row = 0; row < board.length; row++) {
 			String rowString = boardStrings.get(row);
-			boolean leftOfWall = true; // used to fill outer free space will WALL
+			boolean leftOfWall = true; // used to fill outer free space with WALL
 			for (int col = 0; col < board[row].length; col++) {
 				if (col >= rowString.length()) {
 					board[row][col] = WALL;
