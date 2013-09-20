@@ -120,7 +120,14 @@ public class GameState {
 			if(!isFree(moved.getLocation())) {
 				return null;
 			} else {
-//				TODO: if we have a box here we can't move
+				for(int j = 0; j<boxes.size(); j++) {
+					if(i == j) {
+						continue;
+					}
+					if(moved.getLocation().equals(b.getLocation())) {
+						return null;
+					}
+				}
 				boxesMoved.add(moved);
 			}
 		}
