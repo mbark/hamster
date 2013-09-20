@@ -40,10 +40,10 @@ public class GameState {
 
 	public static final char FREE_SPACE = ' ';
 	public static final char WALL = '#';
-	public static final char GOAL = '.';
+	public static final char GOAL = '$';
 	public static final char PLAYER = '@';
 	public static final char PLAYER_ON_GOAL = '+';
-	public static final char BOX = '$';
+	public static final char BOX = '.';
 	public static final char BOX_ON_GOAL = '*';
 
 	private final char[][] board;
