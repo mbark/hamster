@@ -42,7 +42,7 @@ public class GameState {
 	public static final char WALL = '#';
 	public static final char GOAL = '$';
 	public static final char PLAYER = '@';
-	public static final char PLAYER_ON_GOAL = '+';
+	public static final char PLAYER_ON_BOX = '+';
 	public static final char BOX = '.';
 	public static final char BOX_ON_GOAL = '*';
 
@@ -67,6 +67,13 @@ public class GameState {
 	public List<GameState> getNextStates() {
 		List<GameState> nextStates = new ArrayList<>();
 		// ********** temporary shitty code to calculate next states ***********
+		
+		if(player == null) {
+			for(int i = 0; i<boxes.size(); i++) {
+				List<GameState> states = getStatesNextToBox(boxes.get(i));
+				nextStates.addAll(states);
+			}
+		}
 
 		GameState up = move(Move.UP);
 		if(up != null) {
@@ -88,6 +95,25 @@ public class GameState {
 
 		// *********************************************************************
 		return nextStates;
+	}
+	
+	private List<GameState> getStatesNextToBox(Box box) {
+		List<GameState> states = new ArrayList<>(4);
+		
+		addIfFree(states, box, Move.UP);
+		addIfFree(states, box, Move.DOWN);
+		addIfFree(states, box, Move.LEFT);
+		addIfFree(states, box, Move.RIGHT);
+		
+		return states;
+	}
+	
+	private void addIfFree(List<GameState> states, Box box, Move move) {
+		Location loc = box.getLocation().move(move);
+		if(isFree(loc)) {
+			Player player = new Player(loc);
+			states.add(new GameState(board, player, boxes));
+		}
 	}
 
 	private GameState move(Move move) {
@@ -136,7 +162,7 @@ public class GameState {
 	public boolean isDone() {
 		Location loc = player.getLocation();
 		char c = getCharForLocation(loc);
-		if (c != PLAYER_ON_GOAL && c != PLAYER) {
+		if (c != PLAYER) {
 			return false;
 		}
 		
@@ -193,8 +219,8 @@ public class GameState {
 		/*
 		 * Fill the board using the board strings.
 		 */
-		Player player = null;
 		List<Box> boxes = new ArrayList<Box>();
+		Box box;
 		for (int row = 0; row < board.length; row++) {
 			String rowString = boardStrings.get(row);
 			for (int col = 0; col < board[row].length; col++) {
@@ -205,20 +231,26 @@ public class GameState {
 				case GOAL:
 					board[row][col] = square;
 					break;
+				case PLAYER_ON_BOX:
+					box = new Box(new Location(col, row));
+					boxes.add(box);
 				case PLAYER:
-				case PLAYER_ON_GOAL:
-					player = new Player(new Location(col, row));
+					board[row][col] = PLAYER;
 					break;
 				case BOX_ON_GOAL:
 					board[row][col] = GOAL;
+					box = new Box(new Location(col, row));
+					boxes.add(box);
+					break;
 				case BOX:
-					Box box = new Box(new Location(col, row));
+					board[row][col] = FREE_SPACE;
+					box = new Box(new Location(col, row));
 					boxes.add(box);
 					break;
 				}
 			}
 		}
 		
-		return new GameState(board, player, boxes);
+		return new GameState(board, null, boxes);
 	}
 }
