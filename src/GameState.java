@@ -99,32 +99,24 @@ public class GameState {
 		List<Box> boxesMoved = new ArrayList<>();
 		for (int i = 0; i < boxes.size(); i++) {
 			Box b = boxes.get(i);
-			if(!isOnSameLocation(pl, b)) {
-				boxesMoved.add(b);
-				continue;
+			if(b.getLocation().equals(pl.getLocation())) {
+				return null;
 			}
 			
-			Box moved = b.move(move);
-			if(!isFree(moved.getLocation())) {
-				return null;
-			} else {
-				for(int j = 0; j<boxes.size(); j++) {
-					if(i == j) {
-						continue;
-					}
-					if(moved.getLocation().equals(b.getLocation())) {
-						return null;
-					}
-				}
+			if(boxWillBePulled(b, pl, move)) {
+				Box moved = b.move(move);
 				boxesMoved.add(moved);
+			} else {
+				boxesMoved.add(b);
 			}
 		}
 
 		return new GameState(board, pl, boxesMoved);
 	}
 	
-	private boolean isOnSameLocation(Player player, Box box) {
-		return player.getLocation().equals(box.getLocation());
+	private boolean boxWillBePulled(Box box, Player player, Move move) {
+		Location inverseMove = player.getLocation().move(move.inverse());
+		return box.getLocation().equals(inverseMove);
 	}
 	
 	private boolean isFree(Location l) {
