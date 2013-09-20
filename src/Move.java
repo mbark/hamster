@@ -18,4 +18,12 @@ public enum Move {
 		this.dx = dx;
 		this.dy = dy;
 	}
+	
+	public boolean isInXDirection() {
+		return dx > 0;
+	}
+	
+	public boolean isInYDirection() {
+		return dy > 0;
+	}
 }

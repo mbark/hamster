@@ -35,8 +35,6 @@ import java.util.List;
  * If the map is of a non-rectangular shape, excessive space will be
  * "free space".
  * 
- * @author Fredrik Bystam
- * 
  */
 public class GameState {
 
@@ -49,11 +47,11 @@ public class GameState {
 	public static final char BOX_ON_GOAL = '*';
 
 	private final char[][] board;
-	private final Location player;
-	private final List<Location> boxes;
+	private final Player player;
+	private final List<Box> boxes;
 
 	// internal constructor
-	GameState(char[][] board, Location player, List<Location> boxes) {
+	GameState(char[][] board, Player player, List<Box> boxes) {
 		this.board = board;
 		this.player = player;
 		this.boxes = boxes;
@@ -67,7 +65,7 @@ public class GameState {
 	 */
 	public GameState(List<String> boardStrings) {
 		board = calculateBoard(boardStrings);
-		player = new Location(0, 0);
+		player = new Player(new Location(0, 0));
 		boxes = new ArrayList<>();
 	}
 
@@ -82,21 +80,19 @@ public class GameState {
 		List<GameState> nextStates = new ArrayList<>();
 		// ********** temporary shitty code to calculate next states ***********
 
-		int x = player.getX();
-		int y = player.getY();
-		GameState up = goUp();
+		GameState up = move(Move.UP);
 		if(up != null) {
 			nextStates.add(up);
 		}
-		GameState down = goDown();
+		GameState down = move(Move.DOWN);
 		if(down != null) {
 			nextStates.add(down);
 		}
-		GameState left = goLeft();
+		GameState left = move(Move.LEFT);
 		if(left != null) {
 			nextStates.add(left);
 		}
-		GameState right = goRight();
+		GameState right = move(Move.RIGHT);
 		if(right != null) {
 			nextStates.add(right);
 		}
@@ -106,80 +102,50 @@ public class GameState {
 		return nextStates;
 	}
 
-	private GameState goUp() {
-		return move(false, true);
-	}
-
-	private GameState goDown() {
-		return move(false, false);
-	}
-
-	private GameState goLeft() {
-		return move(true, true);
-	}
-
-	private GameState goRight() {
-		return move(true, false);
-	}
-	
-	private GameState move(boolean moveX, boolean moveUpOrLeft) {
-		int x = player.getX();
-		int y = player.getY();
-
-		if (moveX) {
-			if(moveUpOrLeft) {
-				if(x < 0) {
-					return null;
-				}
-				x--;
-			} else {
-				if(x >= board.length) {
-					return null;
-				}
-				x++;
-			}
-		} else {
-			if(moveUpOrLeft) {
-				if(y < 0) {
-					return null;
-				}
-				y--;
-			} else {
-				if(y >= board[x].length) {
-					return null;
-				}
-				y++;
-			}
-		}
-
-		char c = board[x][y];
-		if(!isFree(c)) {
+	private GameState move(Move move) {
+		Player pl = player.move(move);
+		if(!isFree(pl.getLocation())) {
 			return null;
 		}
-
-		Location newLocation = new Location(x, y);
-		List<Location> newBoxes = new ArrayList<>();
+		
+		List<Box> boxesMoved = new ArrayList<>();
 		for (int i = 0; i < boxes.size(); i++) {
-			Location box = new Location(boxes.get(i).getX(), boxes.get(i).getY());
-
-			if (newLocation.getY() == box.getY()) {
-				if (newLocation.getY() - 1 > 0) {
-					if (isFree(board[x][newLocation.getY() - 1])) {
-						box.setY(newLocation.getY() - 1);
-					}
-				}
+			Box b = boxes.get(i);
+			if(!isOnSameLocation(pl, b)) {
+				boxesMoved.add(b);
+				continue;
 			}
-
-			newBoxes.add(box);
+			
+			Box moved = b.move(move);
+			if(!isFree(moved.getLocation())) {
+				return null;
+			} else {
+//				TODO: if we have a box here we can't move
+				boxesMoved.add(moved);
+			}
 		}
 
-		return new GameState(board, newLocation, newBoxes);
+		return new GameState(board, pl, boxesMoved);
 	}
-
-	private boolean isFree(char c) {
+	
+	private boolean isOnSameLocation(Player player, Box box) {
+		return player.getLocation().equals(box.getLocation());
+	}
+	
+	private boolean isFree(Location l) {
+		int x = l.getX();
+		int y = l.getY();
+		if(x < 0 || x > board.length) {
+			return false;
+		}
+		if(y < 0 || y > board[x].length) {
+			return false;
+		}
+		
+		char c = board[x][y];
 		return c == FREE_SPACE || c == GOAL;
 	}
-
+	
 	/**
 	 * Create a {@link GameState} object as a sub-level of this GameState given
 	 * a rectangular shape.
@@ -228,12 +194,12 @@ public class GameState {
 					break;
 				case PLAYER:
 				case PLAYER_ON_GOAL:
-					player.setX(col);
-					player.setY(row);
+					player.setLocation(new Location(col, row));
 					break;
 				case BOX:
 				case BOX_ON_GOAL:
-					boxes.add(new Location(col, row));
+					Box box = new Box(new Location(col, row));
+					boxes.add(box);
 					break;
 				}
 			}

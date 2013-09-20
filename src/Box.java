@@ -22,4 +22,8 @@ public class Box implements Movable<Box> {
 	@Override public Box move(Move move) {
 		return new Box(location.move(move));
 	}
+	
+	public Location getLocation() {
+		return location;
+	}
 }
