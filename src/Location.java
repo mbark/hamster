@@ -13,18 +13,10 @@ public class Location implements Movable<Location> {
 		return x;
 	}
 
-	public void setX(int x) {
-		this.x = x;
-	}
-
 	public int getY() {
 		return y;
 	}
-
-	public void setY(int y) {
-		this.y = y;
-	}
-
+	
 	@Override public Location move(Move move) {
 		return new Location(x + move.dx, y + move.dy);
 	}
