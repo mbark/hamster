@@ -133,6 +133,31 @@ public class GameState {
 		return c == FREE_SPACE || c == GOAL;
 	}
 	
+	public boolean isDone() {
+		Location loc = player.getLocation();
+		char c = getCharForLocation(loc);
+		if (c != PLAYER_ON_GOAL && c != PLAYER) {
+			return false;
+		}
+		
+		for(int i = 0; i<boxes.size(); i++) {
+			Box box = boxes.get(i);
+			loc = box.getLocation();
+			c = getCharForLocation(loc);
+			
+			if(c != GOAL) {
+				return false;
+			}
+		}
+		
+		
+		return true;
+	}
+	
+	private char getCharForLocation(Location loc) {
+		return board[loc.getX()][loc.getY()];
+	}
+	
 	/**
 	 * Create a {@link GameState} object as a sub-level of this GameState given
 	 * a rectangular shape.
