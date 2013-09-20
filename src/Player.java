@@ -22,13 +22,9 @@ public class Player implements Movable<Player> {
 	@Override public Player move(Move move) {
 		return new Player(location.move(move));
 	}
-	
+
 	public Location getLocation() {
 		return location;
 	}
-	
-	public void setLocation(Location newLocation) {
-		location.setX(newLocation.getX());
-		location.setY(newLocation.getY());
-	}
 }
+	

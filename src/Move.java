@@ -7,10 +7,26 @@
  */
 public enum Move {
 
-	UP(0, -1),
-	RIGHT(1, 0),
-	DOWN(0, 1),
-	LEFT(-1, 0);
+	UP(0, -1) {
+		@Override public Move inverse() {
+			return DOWN;
+		}
+	},
+	RIGHT(1, 0) {
+		@Override public Move inverse() {
+			return LEFT;
+		}
+	},
+	DOWN(0, 1) {
+		@Override public Move inverse() {
+			return UP;
+		}
+	},
+	LEFT(-1, 0) {
+		@Override public Move inverse() {
+			return RIGHT;
+		}
+	};
 	
 	public final int dx, dy;
 	
@@ -19,6 +35,8 @@ public enum Move {
 		this.dy = dy;
 	}
 	
+	public abstract Move inverse ();
+	
 	public boolean isInXDirection() {
 		return dx > 0;
 	}
@@ -26,4 +44,5 @@ public enum Move {
 	public boolean isInYDirection() {
 		return dy > 0;
 	}
+	
 }

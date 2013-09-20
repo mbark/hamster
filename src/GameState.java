@@ -58,18 +58,6 @@ public class GameState {
 	}
 
 	/**
-	 * Create a new {@link GameState} using the given input strings.
-	 * 
-	 * @param boardStrings
-	 *            Strings read as a level map
-	 */
-	public GameState(List<String> boardStrings) {
-		board = calculateBoard(boardStrings);
-		player = new Player(new Location(0, 0));
-		boxes = new ArrayList<>();
-	}
-
-	/**
 	 * Get all the significant {@link GameState} instances that are the result
 	 * of one state change in the map.
 	 * 
@@ -175,20 +163,21 @@ public class GameState {
 		return new GameState(subBoard, player, boxes);
 	}
 
-	private char[][] calculateBoard(List<String> boardStrings) {
+	public static GameState calculateBoard(List<String> boardStrings) {
 		int height = boardStrings.size();
 		int width = 0;
 		for (String s : boardStrings)
 			width = Math.max(width, s.length());
 		char[][] board = new char[height][width];
-		fillBoard(board, boardStrings);
-		return board;
+		return fillBoard(board, boardStrings);
 	}
 
-	private void fillBoard(char[][] board, List<String> boardStrings) {
+	private static GameState fillBoard(char[][] board, List<String> boardStrings) {
 		/*
 		 * Fill the board using the board strings.
 		 */
+		Player player = null;
+		List<Box> boxes = new ArrayList<Box>();
 		for (int row = 0; row < board.length; row++) {
 			String rowString = boardStrings.get(row);
 			for (int col = 0; col < board[row].length; col++) {
@@ -201,7 +190,7 @@ public class GameState {
 					break;
 				case PLAYER:
 				case PLAYER_ON_GOAL:
-					player.setLocation(new Location(col, row));
+					player = new Player(new Location(col, row));
 					break;
 				case BOX:
 				case BOX_ON_GOAL:
@@ -211,5 +200,7 @@ public class GameState {
 				}
 			}
 		}
+		
+		return new GameState(board, player, boxes);
 	}
 }
