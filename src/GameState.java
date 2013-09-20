@@ -209,8 +209,9 @@ public class GameState {
 				case PLAYER_ON_GOAL:
 					player = new Player(new Location(col, row));
 					break;
-				case BOX:
 				case BOX_ON_GOAL:
+					board[row][col] = GOAL;
+				case BOX:
 					Box box = new Box(new Location(col, row));
 					boxes.add(box);
 					break;
