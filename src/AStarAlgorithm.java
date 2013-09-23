@@ -5,14 +5,10 @@ import java.util.Map;
  * A* algorithm to traverse the game tree.
  * @author Jonas Sköld
  */
-public class AStarGameTree extends GameTree {
+public class AStarAlgorithm implements PathFindingAlgorithm {
 	private Map<GameState, Integer> costFromStart;
 
-	public AStarGameTree(GameState startState, GameState goalState) {
-		super(startState, goalState);
-	}
-	
-	@Override public Solution findPathToGoal() {
+	@Override public Solution findPathToGoal(GameState startState) {
 		//TODO Implement with A*
 		return null;
 	}

@@ -26,4 +26,17 @@ public class Box implements Movable<Box> {
 	public Location getLocation() {
 		return location;
 	}
+
+	@Override public int hashCode() {
+		return location.hashCode();
+	}
+	
+	@Override public boolean equals(Object obj) {
+		if (obj == this)
+			return true;
+		if (!(obj instanceof Box))
+			return false;
+		Box b = (Box) obj;
+		return location.equals(b.location);
+	}
 }

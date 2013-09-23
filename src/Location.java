@@ -20,4 +20,17 @@ public class Location implements Movable<Location> {
 	@Override public Location move(Move move) {
 		return new Location(x + move.dx, y + move.dy);
 	}
+	
+	@Override public int hashCode() {
+		return 17 + x + 31*y;
+	}
+	
+	@Override public boolean equals(Object obj) {
+		if (obj == this)
+			return true;
+		if (!(obj instanceof Location))
+			return false;
+		Location l = (Location) obj;
+		return x == l.x && y == l.y;
+	}
 }

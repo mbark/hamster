@@ -26,5 +26,19 @@ public class Player implements Movable<Player> {
 	public Location getLocation() {
 		return location;
 	}
+
+
+	@Override public int hashCode() {
+		return location.hashCode();
+	}
+	
+	@Override public boolean equals(Object obj) {
+		if (obj == this)
+			return true;
+		if (!(obj instanceof Player))
+			return false;
+		Player p = (Player) obj;
+		return location.equals(p.location);
+	}
 }
 	
