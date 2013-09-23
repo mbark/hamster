@@ -1,5 +1,4 @@
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.*;
 
 
 public class BfsAlgorithm implements PathFindingAlgorithm {
@@ -7,6 +6,28 @@ public class BfsAlgorithm implements PathFindingAlgorithm {
 	@Override public Solution findPathToGoal(GameState startState) {
 		Queue<GameState> queue = new LinkedList<>();
 		queue.add(startState);
+		Map<GameState, GameState> visited = new HashMap<>(); 
+		while (!queue.isEmpty()) {
+			GameState state = queue.poll();
+			if (state.isDone()) {
+				return createSolution (state, startState, visited);
+			}
+			
+			for (GameState nextState : state.getNextStates()) {
+				if (visited.containsKey (nextState))
+					continue;
+				visited.put (nextState, state);
+				queue.add(nextState);
+			}
+		}
+		return null;
+	}
+
+	private Solution createSolution(GameState state, GameState startState,
+									Map<GameState, GameState> visited) {
+		while (!(state.equals (startState))) {
+			
+		}
 		return null;
 	}
 }
