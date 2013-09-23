@@ -3,12 +3,12 @@ import java.util.Map;
 /**
  * An implementation of the GameTree class which uses the 
  * A* algorithm to traverse the game tree.
- * @author Jonas Sköld
+ * @author Jonas SkÃ¶ld
  */
-public class GameTreeAStar extends GameTree {
+public class AStarGameTree extends GameTree {
 	private Map<GameState, Integer> costFromStart;
 
-	public GameTreeAStar(GameState startState, GameState goalState) {
+	public AStarGameTree(GameState startState, GameState goalState) {
 		super(startState, goalState);
 	}
 	
