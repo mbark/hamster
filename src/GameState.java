@@ -1,6 +1,8 @@
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Represents a state of the game, with the current map and the positions of all
@@ -46,12 +48,14 @@ public class GameState {
 	public static final char BOX = '.';
 	public static final char BOX_ON_GOAL = '*';
 
+	// this is practically a singleton. can be ignored in equals/hashCode
 	private final char[][] board;
+	
 	private final Player player;
-	private final List<Box> boxes;
+	private final Set<Box> boxes;
 
 	// internal constructor
-	GameState(char[][] board, Player player, List<Box> boxes) {
+	GameState(char[][] board, Player player, Set<Box> boxes) {
 		this.board = board;
 		this.player = player;
 		this.boxes = boxes;
@@ -69,8 +73,8 @@ public class GameState {
 		// ********** temporary shitty code to calculate next states ***********
 		
 		if(player == null) {
-			for(int i = 0; i<boxes.size(); i++) {
-				List<GameState> states = getStatesNextToBox(boxes.get(i));
+			for(Box box : boxes) {
+				List<GameState> states = getStatesNextToBox(box);
 				nextStates.addAll(states);
 			}
 			return nextStates;
@@ -123,18 +127,17 @@ public class GameState {
 			return null;
 		}
 		
-		List<Box> boxesMoved = new ArrayList<>();
-		for (int i = 0; i < boxes.size(); i++) {
-			Box b = boxes.get(i);
-			if(b.getLocation().equals(pl.getLocation())) {
+		Set<Box> boxesMoved = new HashSet<>();
+		for (Box box : boxes) {
+			if(box.getLocation().equals(pl.getLocation())) {
 				return null;
 			}
 			
-			if(boxWillBePulled(b, pl, move)) {
-				Box moved = b.move(move);
+			if(boxWillBePulled(box, pl, move)) {
+				Box moved = box.move(move);
 				boxesMoved.add(moved);
 			} else {
-				boxesMoved.add(b);
+				boxesMoved.add(box);
 			}
 		}
 
@@ -167,8 +170,7 @@ public class GameState {
 			return false;
 		}
 		
-		for(int i = 0; i<boxes.size(); i++) {
-			Box box = boxes.get(i);
+		for(Box box : boxes) {
 			loc = box.getLocation();
 			c = getCharForLocation(loc);
 			
@@ -220,7 +222,7 @@ public class GameState {
 		/*
 		 * Fill the board using the board strings.
 		 */
-		List<Box> boxes = new ArrayList<Box>();
+		Set<Box> boxes = new HashSet<Box>();
 		Box box;
 		for (int row = 0; row < board.length; row++) {
 			String rowString = boardStrings.get(row);
@@ -251,7 +253,19 @@ public class GameState {
 				}
 			}
 		}
-		
 		return new GameState(board, null, boxes);
+	}
+	
+	@Override public int hashCode() {
+		return player.hashCode() + 31*boxes.hashCode();
+	}
+	
+	@Override public boolean equals(Object obj) {
+		if (obj == this)
+			return true;
+		if (!(obj instanceof GameState))
+			return false;
+		GameState g = (GameState) obj;
+		return player.equals(g.player) && boxes.equals(g.boxes);
 	}
 }
