@@ -7,30 +7,33 @@
  */
 public enum Move {
 
-	UP(0, -1) {
+	UP('U', 0, -1) {
 		@Override public Move inverse() {
 			return DOWN;
 		}
 	},
-	RIGHT(1, 0) {
+	RIGHT('R', 1, 0) {
 		@Override public Move inverse() {
 			return LEFT;
 		}
 	},
-	DOWN(0, 1) {
+	DOWN('D', 0, 1) {
 		@Override public Move inverse() {
 			return UP;
 		}
 	},
-	LEFT(-1, 0) {
+	LEFT('L', -1, 0) {
 		@Override public Move inverse() {
 			return RIGHT;
 		}
 	};
 	
+	private final char moveChar;
+	// public because final, for readability
 	public final int dx, dy;
 	
-	Move (int dx, int dy) {
+	Move (char moveChar, int dx, int dy) {
+		this.moveChar = moveChar;
 		this.dx = dx;
 		this.dy = dy;
 	}
@@ -44,5 +47,8 @@ public enum Move {
 	public boolean isInYDirection() {
 		return dy > 0;
 	}
-	
+
+	public char toChar () {
+		return moveChar;
+	}
 }

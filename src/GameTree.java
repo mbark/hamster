@@ -3,11 +3,11 @@
  * The GameTree class is a representation of the possible moves
  * in a sokoban game.
  * 
- * @author Jonas Sköld
+ * @author Jonas Skï¿½ld
  */
 public abstract class GameTree {
-	private GameState startState;
-	private GameState goalState;
+	private final GameState startState;
+	private final GameState goalState;
 	
 	public GameTree(GameState startState, GameState goalState) {
 		this.startState = startState;
