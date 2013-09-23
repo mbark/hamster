@@ -49,13 +49,14 @@ public class GameState {
 	public static final char BOX_ON_GOAL = '*';
 
 	// this is practically a singleton. can be ignored in equals/hashCode
-	private final char[][] board;
+	//private final char[][] board;
+	private final Board board;
 	
 	private final Player player;
 	private final Set<Box> boxes;
 
 	// internal constructor
-	GameState(char[][] board, Player player, Set<Box> boxes) {
+	GameState(Board board, Player player, Set<Box> boxes) {
 		this.board = board;
 		this.player = player;
 		this.boxes = boxes;
@@ -150,17 +151,7 @@ public class GameState {
 	}
 	
 	private boolean isFree(Location l) {
-		int x = l.getX();
-		int y = l.getY();
-		if(x < 0 || x > board.length) {
-			return false;
-		}
-		if(y < 0 || y > board[x].length) {
-			return false;
-		}
-		
-		char c = board[x][y];
-		return c == FREE_SPACE || c == GOAL;
+		return board.isFree(l);
 	}
 	
 	public boolean isDone() {
@@ -184,7 +175,7 @@ public class GameState {
 	}
 	
 	private char getCharForLocation(Location loc) {
-		return board[loc.getX()][loc.getY()];
+		return board.getCharForLocation(loc);
 	}
 	
 	/**
@@ -203,9 +194,7 @@ public class GameState {
 	 *         Level
 	 */
 	public GameState subGameState(int x, int y, int width, int height) {
-		char[][] subBoard = new char[width][height];
-		for (int row = 0; row < height; row++)
-			subBoard[row] = Arrays.copyOfRange(board[y++], x, x + width);
+		Board subBoard = board.subBoard(x, y, width, height);
 		return new GameState(subBoard, player, boxes);
 	}
 
@@ -223,6 +212,7 @@ public class GameState {
 		 * Fill the board using the board strings.
 		 */
 		Set<Box> boxes = new HashSet<Box>();
+		Set<Goal> goals = new HashSet<Goal>();
 		Box box;
 		for (int row = 0; row < board.length; row++) {
 			String rowString = boardStrings.get(row);
@@ -231,7 +221,6 @@ public class GameState {
 				switch (square) {
 				case FREE_SPACE:
 				case WALL:
-				case GOAL:
 					board[row][col] = square;
 					break;
 				case PLAYER_ON_BOX:
@@ -241,9 +230,11 @@ public class GameState {
 					board[row][col] = PLAYER;
 					break;
 				case BOX_ON_GOAL:
-					board[row][col] = GOAL;
 					box = new Box(new Location(col, row));
 					boxes.add(box);
+				case GOAL:
+					board[row][col] = GOAL;
+					goals.add(new Goal(new Location(col, row)));
 					break;
 				case BOX:
 					board[row][col] = FREE_SPACE;
@@ -253,7 +244,7 @@ public class GameState {
 				}
 			}
 		}
-		return new GameState(board, null, boxes);
+		return new GameState(new Board(board, goals), null, boxes);
 	}
 	
 	@Override public int hashCode() {
