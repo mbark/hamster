@@ -73,6 +73,7 @@ public class GameState {
 				List<GameState> states = getStatesNextToBox(boxes.get(i));
 				nextStates.addAll(states);
 			}
+			return;
 		}
 
 		GameState up = move(Move.UP);
