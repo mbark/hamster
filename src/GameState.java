@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -83,23 +84,10 @@ public class GameState {
 			return nextStates;
 		}
 
-		GameState up = move(Move.UP);
-		if(up != null) {
-			nextStates.add(up);
-		}
-		GameState down = move(Move.DOWN);
-		if(down != null) {
-			nextStates.add(down);
-		}
-		GameState left = move(Move.LEFT);
-		if(left != null) {
-			nextStates.add(left);
-		}
-		GameState right = move(Move.RIGHT);
-		if(right != null) {
-			nextStates.add(right);
-		}
-		
+		nextStates.addAll (move(Move.UP));
+		nextStates.addAll (move(Move.DOWN));
+		nextStates.addAll (move(Move.LEFT));
+		nextStates.addAll (move(Move.RIGHT));
 
 		// *********************************************************************
 		return nextStates;
@@ -124,33 +112,37 @@ public class GameState {
 		}
 	}
 
-	private GameState move(Move move) {
+	// the List thing is a fulhack :( but it works :D maybe :/
+	private List<GameState> move(Move move) {
 		Player movedPlayer = player.move(move);
 		if(!board.isFree(movedPlayer.getLocation())) {
-			return null;
+			return Collections.emptyList();
 		}
 		
-		Set<Box> boxesMoved = new HashSet<>();
 		for (Box box : boxes) {
 			// can't move where there is a box
 			if(box.getLocation().equals(movedPlayer.getLocation())) {
-				return null;
+				return Collections.emptyList();
 			}
 			
-			// TODO: this will ALWAYS move boxes if possible :(
-			// both opportunities should be given
-			if(boxWillBePulled(box, player, move)) {
+			
+			if(boxCanBePulled(box, player, move)) {
+				// at this point, return two states
+				// one with a moved box, and one with no moved boxes
 				Box moved = box.move(move);
-				boxesMoved.add(moved);
-			} else {
-				boxesMoved.add(box);
+				Set<Box> movedBoxes = new HashSet<>(boxes);
+				movedBoxes.remove(box);
+				movedBoxes.add(moved);
+				return Arrays.asList(new GameState(board, movedPlayer, movedBoxes, move),
+									 new GameState(board, movedPlayer, boxes, move));
 			}
 		}
 
-		return new GameState(board, movedPlayer, boxesMoved, move);
+		// at this point, no boxes were moved
+		return Arrays.asList (new GameState(board, movedPlayer, boxes, move));
 	}
 	
-	private boolean boxWillBePulled(Box box, Player player, Move move) {
+	private boolean boxCanBePulled(Box box, Player player, Move move) {
 		// if there is a box in the opposite direction of the move, return true
 		Location inverseLocation = player.getLocation().move(move.inverse());
 		return box.getLocation().equals(inverseLocation);
