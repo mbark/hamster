@@ -14,10 +14,10 @@ public class Board {
 	public boolean isFree(Location l) {
 		int x = l.getX();
 		int y = l.getY();
-		if(x < 0 || x > board.length) {
+		if(y < 0 || y > board.length) {
 			return false;
 		}
-		if(y < 0 || y > board[x].length) {
+		if(x < 0 || x > board[y].length) {
 			return false;
 		}
 		
@@ -26,13 +26,14 @@ public class Board {
 	}
 	
 	public char getCharForLocation(Location loc) {
-		return board[loc.getX()][loc.getY()];
+		return board[loc.getY()][loc.getX()];
 	}
 	
 	public Board subBoard(int x, int y, int width, int height) {
-		char[][] subBoard = new char[width][height];
+		char[][] subBoard = new char[height][width];
 		for (int row = 0; row < height; row++)
 			subBoard[row] = Arrays.copyOfRange(board[y++], x, x + width);
+		//TODO modify goals so that it only contains the goals in the subboard
 		return new Board(subBoard, goals);
 	}
 }
