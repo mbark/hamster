@@ -1,28 +1,28 @@
 
 public class Location implements Movable<Location> {
 	
-	private final int x;
-	private final int y;
+	private final int col;
+	private final int row;
 	
-	public Location (int x, int y) {
-		this.x = x;
-		this.y = y;
+	public Location (int col, int row) {
+		this.col = col;
+		this.row = row;
 	}
 	
-	public int getX() {
-		return x;
+	public int getCol() {
+		return col;
 	}
 
-	public int getY() {
-		return y;
+	public int getRow() {
+		return row;
 	}
 	
 	@Override public Location move(Move move) {
-		return new Location(x + move.dx, y + move.dy);
+		return new Location(col + move.getColDiff(), row + move.getRowDiff());
 	}
 	
 	@Override public int hashCode() {
-		return 17 + x + 31*y;
+		return 17 + col + 31*row;
 	}
 	
 	@Override public boolean equals(Object obj) {
@@ -31,6 +31,10 @@ public class Location implements Movable<Location> {
 		if (!(obj instanceof Location))
 			return false;
 		Location l = (Location) obj;
-		return x == l.x && y == l.y;
+		return col == l.col && row == l.row;
+	}
+	
+	@Override public String toString() {
+		return String.format("(%d,%d)", col, row);
 	}
 }

@@ -118,7 +118,7 @@ public class GameState {
 	
 	private void addIfFree(List<GameState> states, Box box, Move move) {
 		Location loc = box.getLocation().move(move);
-		if(isFree(loc)) {
+		if(board.isFree(loc)) {
 			Player player = new Player(loc);
 			states.add(new GameState(board, player, boxes, null));
 		}
@@ -126,7 +126,7 @@ public class GameState {
 
 	private GameState move(Move move) {
 		Player pl = player.move(move);
-		if(!isFree(pl.getLocation())) {
+		if(!board.isFree(pl.getLocation())) {
 			return null;
 		}
 		
@@ -152,20 +152,23 @@ public class GameState {
 		return box.getLocation().equals(inverseMove);
 	}
 	
-	private boolean isFree(Location l) {
-		return board.isFree(l);
-	}
-	
 	public boolean isDone() {
+		/*
+		 * initial state, player will be null and game won't be done
+		 * 
+		 * TODO: this won't work if the game is already solved form the beginning
+		 */
+		if (player == null)
+			return false;
 		Location loc = player.getLocation();
-		char c = getCharForLocation(loc);
+		char c = board.getCharForLocation(loc);
 		if (c != PLAYER) {
 			return false;
 		}
 		
 		for(Box box : boxes) {
 			loc = box.getLocation();
-			c = getCharForLocation(loc);
+			c = board.getCharForLocation(loc);
 			
 			if(c != GOAL) {
 				return false;
@@ -174,10 +177,6 @@ public class GameState {
 		
 		
 		return true;
-	}
-	
-	private char getCharForLocation(Location loc) {
-		return board.getCharForLocation(loc);
 	}
 	
 	/**

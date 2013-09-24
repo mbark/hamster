@@ -30,17 +30,26 @@ public enum Move {
 	
 	private final char moveChar;
 	// public because final, for readability
-	public final int dx, dy;
+	private final int colDiff;
+	private final int rowDiff;
 	
-	Move (char moveChar, int dx, int dy) {
+	Move (char moveChar, int colDiff, int rowDiff) {
 		this.moveChar = moveChar;
-		this.dx = dx;
-		this.dy = dy;
+		this.colDiff = colDiff;
+		this.rowDiff = rowDiff;
 	}
 	
 	public abstract Move inverse ();
 	
 	public char toChar () {
 		return moveChar;
+	}
+
+	public int getColDiff() {
+		return colDiff;
+	}
+
+	public int getRowDiff() {
+		return rowDiff;
 	}
 }
