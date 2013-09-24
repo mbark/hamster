@@ -13,7 +13,7 @@ public class Main {
 	public static final void main(String[] args) throws IOException {
 		List<String> boardStrings = read();
 		GameState gs = GameState.calculateBoard(boardStrings);
-		Solution solution = BFS.findPathToGoal(gs);
+		Solution solution = A_STAR.findPathToGoal(gs);
 		System.out.println(solution);
 	}
 	
