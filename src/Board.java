@@ -36,4 +36,15 @@ public class Board {
 		//TODO modify goals so that it only contains the goals in the subboard
 		return new Board(subBoard, goals);
 	}
+	
+	char[][] getBoardMatrix () {
+		return matrixCopy (board);
+	}
+	
+	static char[][] matrixCopy(char[][] matrix) {
+		char[][] copy = new char[matrix.length][];
+		for (int row = 0; row < copy.length; row++)
+			copy[row] = matrix[row].clone();
+		return copy;
+	}
 }

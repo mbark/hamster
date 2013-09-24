@@ -208,6 +208,15 @@ public class GameState {
 		return fillBoard(board, boardStrings);
 	}
 
+	/**
+	 * Get the {@link Move} instance that caused this {@link GameState}.
+	 * 
+	 * @return The final {@link Move} before this {@link GameState}
+	 */
+	public Move getLastMove() {
+		return lastMove;
+	}
+
 	private static GameState fillBoard(char[][] board, List<String> boardStrings) {
 		/*
 		 * Fill the board using the board strings.
@@ -266,8 +275,27 @@ public class GameState {
 		GameState g = (GameState) obj;
 		return player.equals(g.player) && boxes.equals(g.boxes);
 	}
-
-	public Move getLastMove() {
-		return lastMove;
+	
+	@Override public String toString() {
+		char[][] matrix = board.getBoardMatrix ();
+		for (Box box : boxes) {
+			Location l = box.getLocation();
+			char c = board.getCharForLocation(l);
+			if (c == GOAL)
+				matrix[l.getRow()][l.getCol()] = BOX_ON_GOAL;
+			else
+				matrix[l.getRow()][l.getCol()] = BOX;
+		}
+		Location pl = player.getLocation();
+		matrix[pl.getRow()][pl.getCol()] = PLAYER;
+		
+		StringBuilder sb = new StringBuilder();
+		for (int row = 0; row < matrix.length; row++) {
+			for (int col = 0; col < matrix[row].length; col++) {
+				sb.append(matrix[row][col]);
+			}
+			sb.append('\n');
+		}
+		return sb.toString();
 	}
 }
