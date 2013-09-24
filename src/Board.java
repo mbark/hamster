@@ -22,7 +22,7 @@ public class Board {
 		}
 		
 		char c = board[row][col];
-		return c == GameState.FREE_SPACE || c == GameState.GOAL;
+		return c == GameState.FREE_SPACE || c == GameState.GOAL || c == GameState.PLAYER;
 	}
 	
 	public char getCharForLocation(Location loc) {

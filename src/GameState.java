@@ -125,18 +125,21 @@ public class GameState {
 	}
 
 	private GameState move(Move move) {
-		Player pl = player.move(move);
-		if(!board.isFree(pl.getLocation())) {
+		Player movedPlayer = player.move(move);
+		if(!board.isFree(movedPlayer.getLocation())) {
 			return null;
 		}
 		
 		Set<Box> boxesMoved = new HashSet<>();
 		for (Box box : boxes) {
-			if(box.getLocation().equals(pl.getLocation())) {
+			// can't move where there is a box
+			if(box.getLocation().equals(movedPlayer.getLocation())) {
 				return null;
 			}
 			
-			if(boxWillBePulled(box, pl, move)) {
+			// TODO: this will ALWAYS move boxes if possible :(
+			// both opportunities should be given
+			if(boxWillBePulled(box, player, move)) {
 				Box moved = box.move(move);
 				boxesMoved.add(moved);
 			} else {
@@ -144,12 +147,13 @@ public class GameState {
 			}
 		}
 
-		return new GameState(board, pl, boxesMoved, move);
+		return new GameState(board, movedPlayer, boxesMoved, move);
 	}
 	
 	private boolean boxWillBePulled(Box box, Player player, Move move) {
-		Location inverseMove = player.getLocation().move(move.inverse());
-		return box.getLocation().equals(inverseMove);
+		// if there is a box in the opposite direction of the move, return true
+		Location inverseLocation = player.getLocation().move(move.inverse());
+		return box.getLocation().equals(inverseLocation);
 	}
 	
 	public boolean isDone() {
@@ -218,7 +222,9 @@ public class GameState {
 		for (int row = 0; row < board.length; row++) {
 			String rowString = boardStrings.get(row);
 			for (int col = 0; col < board[row].length; col++) {
-				char square = rowString.charAt(col);
+				char square = ' ';
+				if (col < rowString.length())
+					square = rowString.charAt(col);
 				switch (square) {
 				case FREE_SPACE:
 				case WALL:

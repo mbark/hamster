@@ -40,5 +40,9 @@ public class Player implements Movable<Player> {
 		Player p = (Player) obj;
 		return location.equals(p.location);
 	}
+	
+	@Override public String toString() {
+		return "Player: " + location.toString();
+	}
 }
 	

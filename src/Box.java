@@ -39,4 +39,8 @@ public class Box implements Movable<Box> {
 		Box b = (Box) obj;
 		return location.equals(b.location);
 	}
+	
+	@Override public String toString() {
+		return "Box: " + location.toString();
+	}
 }

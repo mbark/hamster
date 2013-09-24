@@ -35,6 +35,6 @@ public class Location implements Movable<Location> {
 	}
 	
 	@Override public String toString() {
-		return String.format("(%d,%d)", col, row);
+		return String.format("(row: %d, col: %d)", row, col);
 	}
 }
