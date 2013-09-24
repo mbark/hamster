@@ -254,7 +254,11 @@ public class GameState {
 	}
 	
 	@Override public int hashCode() {
-		return player.hashCode() + 31*boxes.hashCode();
+		int hashCode = 0;
+		if(player != null) {
+			hashCode += player.hashCode();
+		}
+		return hashCode + 31*boxes.hashCode();
 	}
 	
 	@Override public boolean equals(Object obj) {
