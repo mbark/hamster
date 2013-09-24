@@ -51,15 +51,17 @@ public class GameState {
 	// this is practically a singleton. can be ignored in equals/hashCode
 	//private final char[][] board;
 	private final Board board;
+	private final Move lastMove;
 	
 	private final Player player;
 	private final Set<Box> boxes;
 
 	// internal constructor
-	GameState(Board board, Player player, Set<Box> boxes) {
+	GameState(Board board, Player player, Set<Box> boxes, Move lastMove) {
 		this.board = board;
 		this.player = player;
 		this.boxes = boxes;
+		this.lastMove = lastMove;
 	}
 
 	/**
@@ -118,7 +120,7 @@ public class GameState {
 		Location loc = box.getLocation().move(move);
 		if(isFree(loc)) {
 			Player player = new Player(loc);
-			states.add(new GameState(board, player, boxes));
+			states.add(new GameState(board, player, boxes, null));
 		}
 	}
 
@@ -142,7 +144,7 @@ public class GameState {
 			}
 		}
 
-		return new GameState(board, pl, boxesMoved);
+		return new GameState(board, pl, boxesMoved, move);
 	}
 	
 	private boolean boxWillBePulled(Box box, Player player, Move move) {
@@ -195,7 +197,7 @@ public class GameState {
 	 */
 	public GameState subGameState(int x, int y, int width, int height) {
 		Board subBoard = board.subBoard(x, y, width, height);
-		return new GameState(subBoard, player, boxes);
+		return new GameState(subBoard, player, boxes, null);
 	}
 
 	public static GameState calculateBoard(List<String> boardStrings) {
@@ -244,7 +246,7 @@ public class GameState {
 				}
 			}
 		}
-		return new GameState(new Board(board, goals), null, boxes);
+		return new GameState(new Board(board, goals), null, boxes, null);
 	}
 	
 	@Override public int hashCode() {
@@ -258,5 +260,9 @@ public class GameState {
 			return false;
 		GameState g = (GameState) obj;
 		return player.equals(g.player) && boxes.equals(g.boxes);
+	}
+
+	public Move getLastMove() {
+		return lastMove;
 	}
 }

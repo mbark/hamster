@@ -9,9 +9,8 @@ public class BfsAlgorithm implements PathFindingAlgorithm {
 		Map<GameState, GameState> visited = new HashMap<>(); 
 		while (!queue.isEmpty()) {
 			GameState state = queue.poll();
-			if (state.isDone()) {
+			if (state.isDone())
 				return createSolution (state, startState, visited);
-			}
 			
 			for (GameState nextState : state.getNextStates()) {
 				if (visited.containsKey (nextState))
@@ -25,9 +24,12 @@ public class BfsAlgorithm implements PathFindingAlgorithm {
 
 	private Solution createSolution(GameState state, GameState startState,
 									Map<GameState, GameState> visited) {
+		Solution solution = new Solution();
 		while (!(state.equals (startState))) {
-			
+			solution.append(state.getLastMove());
+			state = visited.get(state);
 		}
-		return null;
+		
+		return solution;
 	}
 }
