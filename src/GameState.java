@@ -63,9 +63,6 @@ public class GameState {
 		this.player = player;
 		this.boxes = boxes;
 		this.lastMove = lastMove;
-		if (boxes.size() != 2) {
-			System.out.println("balle");
-		}
 	}
 
 	/**
