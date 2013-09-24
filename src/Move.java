@@ -40,14 +40,6 @@ public enum Move {
 	
 	public abstract Move inverse ();
 	
-	public boolean isInXDirection() {
-		return dx > 0;
-	}
-	
-	public boolean isInYDirection() {
-		return dy > 0;
-	}
-
 	public char toChar () {
 		return moveChar;
 	}
