@@ -21,7 +21,7 @@ public class Board {
 			return false;
 		}
 		
-		char c = board[x][y];
+		char c = board[y][x];
 		return c == GameState.FREE_SPACE || c == GameState.GOAL;
 	}
 	
