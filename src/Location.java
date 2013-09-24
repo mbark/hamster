@@ -22,7 +22,7 @@ public class Location implements Movable<Location> {
 	}
 	
 	public static int distance(Location from, Location to) {
-		return from.col - to.col + from.row - to.row;
+		return Math.abs(from.col - to.col) + Math.abs(from.row - to.row);
 	}
 	
 	@Override public int hashCode() {
