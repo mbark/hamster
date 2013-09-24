@@ -63,6 +63,9 @@ public class GameState {
 		this.player = player;
 		this.boxes = boxes;
 		this.lastMove = lastMove;
+		if (boxes.size() != 2) {
+			System.out.println("balle");
+		}
 	}
 
 	/**
@@ -106,7 +109,7 @@ public class GameState {
 	
 	private void addIfFree(List<GameState> states, Box box, Move move) {
 		Location loc = box.getLocation().move(move);
-		if(board.isFree(loc)) {
+		if(isFreeForPlayer(loc)) {
 			Player player = new Player(loc);
 			states.add(new GameState(board, player, boxes, null));
 		}
@@ -115,7 +118,7 @@ public class GameState {
 	// the List thing is a fulhack :( but it works :D maybe :/
 	private List<GameState> move(Move move) {
 		Player movedPlayer = player.move(move);
-		if(!board.isFree(movedPlayer.getLocation())) {
+		if(!isFreeForPlayer(movedPlayer.getLocation())) {
 			return Collections.emptyList();
 		}
 		
@@ -140,6 +143,10 @@ public class GameState {
 
 		// at this point, no boxes were moved
 		return Arrays.asList (new GameState(board, movedPlayer, boxes, move));
+	}
+	
+	private boolean isFreeForPlayer (Location loc) {
+		return board.isFree(loc) && !boxes.contains(new Box(loc));
 	}
 	
 	private boolean boxCanBePulled(Box box, Player player, Move move) {
