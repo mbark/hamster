@@ -18,10 +18,10 @@ public class Board {
 	public boolean isFree(Location l) {
 		int col = l.getCol();
 		int row = l.getRow();
-		if(row < 0 || row > board.length) {
+		if(row < 0 || row >= board.length) {
 			return false;
 		}
-		if(col < 0 || col > board[row].length) {
+		if(col < 0 || col >= board[row].length) {
 			return false;
 		}
 		
