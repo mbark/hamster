@@ -2,8 +2,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.PriorityQueue;
-import java.util.Queue;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -53,7 +51,9 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 					cameFrom.put(neighbor.gameState, current.gameState);
 					gScore.put(neighbor, tentativeGScore);
 					fScore.put(neighbor, estimatedTotalCost(neighbor, gScore));
-					openSet.add(neighbor);
+					if(!openSet.contains(neighbor)) {
+						openSet.add(neighbor);
+					}
 				}
 			}
 		}
@@ -105,7 +105,7 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 			}
 			int score = myScore - otherScore;
 			if(score == 0) {
-				score = 1;
+				score = Math.random() > 0.5 ? -1 : 1;
 			}
 			
 			return score;
