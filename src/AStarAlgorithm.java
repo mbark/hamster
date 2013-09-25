@@ -10,15 +10,13 @@ import java.util.Set;
  * @author Jonas Sköld
  */
 public class AStarAlgorithm implements PathFindingAlgorithm {
-
 	@Override public Solution findPathToGoal(GameState start) {
 		Map<GameState, Integer> gScore  = new HashMap<>();
 		Map<GameState, Integer> fScore = new HashMap<>();
-		
 		Set<GameState> closedSet = new HashSet<>();
 		Set<GameState> openSet = new HashSet<>();
 		openSet.add(start);
-		HashMap<GameState, GameState> cameFrom = new HashMap<>();
+		Map<GameState, GameState> cameFrom = new HashMap<>();
 		gScore.put(start, 0);
 		fScore.put(start, estimatedTotalCost(start, gScore));
 		
@@ -31,11 +29,12 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 					reconstructPath(cameFrom, state, sol);
 					return sol;
 				}
-				
 				if(fScore.get(state) < lowestFScore) {
+					lowestFScore = fScore.get(state);
 					current = state;
 				}
 			}
+			
 			
 			openSet.remove(current);
 			closedSet.add(current);
@@ -63,7 +62,7 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 		return null;
 	}
 	
-	private void reconstructPath(HashMap<GameState, GameState> cameFrom, GameState current, Solution solution) {
+	private void reconstructPath(Map<GameState, GameState> cameFrom, GameState current, Solution solution) {
 		if(current.getLastMove() == null) {
 			return;
 		}
@@ -82,6 +81,7 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 	}
 
 	private int estimatedCostToGoal(GameState currentState) {
-		return 0;
+		int distanceToGoal = currentState.getDistanceToGoal();
+		return distanceToGoal;
 	}
 }

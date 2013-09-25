@@ -11,6 +11,10 @@ public class Board {
 		this.goals = goals;
 	}
 	
+	public Set<Goal> getGoals() {
+		return goals;
+	}
+	
 	public boolean isFree(Location l) {
 		int col = l.getCol();
 		int row = l.getRow();
@@ -28,6 +32,7 @@ public class Board {
 	public char getCharForLocation(Location loc) {
 		return board[loc.getRow()][loc.getCol()];
 	}
+	
 	
 	public Board subBoard(int col, int row, int width, int height) {
 		char[][] subBoard = new char[height][width];

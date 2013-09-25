@@ -21,6 +21,10 @@ public class Location implements Movable<Location> {
 		return new Location(col + move.getColDiff(), row + move.getRowDiff());
 	}
 	
+	public static int distance(Location from, Location to) {
+		return Math.abs(from.col - to.col) + Math.abs(from.row - to.row);
+	}
+	
 	@Override public int hashCode() {
 		return 17 + col + 31*row;
 	}

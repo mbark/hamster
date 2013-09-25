@@ -179,6 +179,24 @@ public class GameState {
 		return true;
 	}
 	
+	public int getDistanceToGoal() {
+		int totalDistance = 0;
+		
+		Set<Goal> goals = board.getGoals();
+		for(Goal goal : goals) {
+			int shortestDistance = Integer.MAX_VALUE;
+			for(Box box : boxes) {
+				int distance = Location.distance(goal.getLocation(), box.getLocation());
+				if(distance < shortestDistance) {
+					shortestDistance = distance;
+				}
+			}
+			totalDistance += shortestDistance;
+		}
+		
+		return totalDistance;
+	}
+	
 	/**
 	 * Create a {@link GameState} object as a sub-level of this GameState given
 	 * a rectangular shape.
