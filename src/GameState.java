@@ -1,9 +1,12 @@
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -127,8 +130,41 @@ public class GameState {
 	}
 	
 	private Map<BoxMove, List<Move>> findMovePathsBFS(List<BoxMove> possibleBoxMoves) {
-		// TODO Auto-generated method stub
-		return null;
+		Set<Location> possibleLocations = new HashSet<>();
+		for (BoxMove boxMove : possibleBoxMoves)
+			possibleLocations.add(boxMove.box.getLocation().move(boxMove.move));
+		Queue<Location> queue = new LinkedList<>();
+		queue.add(player.getLocation());
+		Map<Location, Move> visited = new HashMap<>(); 
+		while (!queue.isEmpty()) {
+			Location location = queue.poll();
+			if (possibleLocations.contains(location))
+				possibleLocations.remove(location);
+			if (possibleLocations.isEmpty())
+				break;
+			
+			for (Move move : Move.values()) {
+				Location newLocation = player.getLocation().move(move);
+				if (visited.containsKey (newLocation) || !isFreeForPlayer(newLocation))
+					continue;
+				visited.put (newLocation, move);
+				queue.add(newLocation);
+			}
+		}
+		
+		//Reconstruct all paths
+		Map<BoxMove, List<Move>> pathsToPossibleBoxMoves = new HashMap<>();
+		for (BoxMove boxMove : possibleBoxMoves) {
+			List<Move> path = new ArrayList<>();
+			Location currentLocation = boxMove.box.getLocation().move(boxMove.move);
+			while (!currentLocation.equals(player.getLocation())) {
+				Move move = visited.get(currentLocation);
+				path.add(move);
+				currentLocation = currentLocation.move(move);
+			}
+			pathsToPossibleBoxMoves.put(boxMove, path);
+		}
+		return pathsToPossibleBoxMoves;
 	}
 	
 	/**
