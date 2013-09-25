@@ -169,8 +169,10 @@ public class GameState {
 		//Reconstruct all paths
 		Map<BoxMove, List<Move>> pathsToPossibleBoxMoves = new HashMap<>();
 		for (BoxMove boxMove : possibleBoxMoves) {
-			List<Move> path = new ArrayList<>();
 			Location currentLocation = boxMove.box.getLocation().move(boxMove.move);
+			if (!visited.containsKey(currentLocation)) // unreachable boxMove
+				continue;
+			List<Move> path = new ArrayList<>();
 			while (!currentLocation.equals(player.getLocation())) {
 				Move move = visited.get(currentLocation);
 				path.add(move);
