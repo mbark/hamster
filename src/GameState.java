@@ -150,6 +150,7 @@ public class GameState {
 		Queue<Location> queue = new LinkedList<>();
 		queue.add(player.getLocation());
 		Map<Location, Move> visited = new HashMap<>(); 
+		
 		while (!queue.isEmpty()) {
 			Location location = queue.poll();
 			if (possibleLocations.isEmpty())
@@ -157,7 +158,7 @@ public class GameState {
 			possibleLocations.remove(location);
 			
 			for (Move move : Move.values()) {
-				Location newLocation = player.getLocation().move(move);
+				Location newLocation = location.move(move);
 				if (visited.containsKey (newLocation) || !isFreeForPlayer(newLocation))
 					continue;
 				visited.put (newLocation, move);
