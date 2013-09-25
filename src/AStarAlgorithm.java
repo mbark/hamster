@@ -1,3 +1,4 @@
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -11,44 +12,46 @@ import java.util.TreeSet;
  * @author Jonas Sköld
  */
 public class AStarAlgorithm implements PathFindingAlgorithm {
-	Map<Node, Integer> gScore  = new HashMap<>();
-	Map<Node, Integer> fScore = new HashMap<>();
-	
-	@Override public Solution findPathToGoal(GameState startState) {
-		Set<Node> closedSet = new HashSet<>();
-		TreeSet<Node> openSet = new TreeSet<>();
-		Set<Node> visitedNodes = new HashSet<>();
+	Map<GameState, Integer> gScore  = new HashMap<>();
+	Map<GameState, Integer> fScore = new HashMap<>();
+
+	@Override public Solution findPathToGoal(GameState start) {
+		Set<GameState> visitedNodes = new HashSet<>();
+		Set<GameState> closedSet = new HashSet<>();
+		TreeSet<GameState> openSet = new TreeSet<>(getComparator());
 		Map<GameState, GameState> cameFrom = new HashMap<>();
-		
-		Node start = new Node(startState);
+
 		gScore.put(start, 0);
 		fScore.put(start, estimatedTotalCost(start, gScore));
 		openSet.add(start);
-		
+
 		while(!openSet.isEmpty()) {
-			Node current = openSet.pollFirst();
-			if(current.gameState.isDone()) {
+			GameState current = openSet.pollFirst();
+			if(current.isDone()) {
 				Solution solution = new Solution();
-				reconstructPath(cameFrom, current.gameState, solution);
+				reconstructPath(cameFrom, current, solution);
 				return solution;
 			}
-			
+
 			openSet.remove(current);
 			closedSet.add(current);
 			visitedNodes.add(current);
-			
-			List<GameState> nextStates = current.gameState.getNextStates();
-			for(GameState neighborState : nextStates) {
-				Node neighbor = new Node(neighborState);
+
+			List<GameState> nextStates = current.getNextStates();
+			for(GameState neighbor : nextStates) {
+				if(visitedNodes.contains(neighbor)) {
+					continue;
+				}
+
 				int tentativeGScore = gScore.get(current) + 1;
 				if(closedSet.contains(neighbor)) {
 					if(tentativeGScore >= gScore.get(neighbor)) {
 						continue;
 					}
- 				}
-				
+				}
+
 				if(!openSet.contains(neighbor) || tentativeGScore < gScore.get(neighbor)) {
-					cameFrom.put(neighbor.gameState, current.gameState);
+					cameFrom.put(neighbor, current);
 					gScore.put(neighbor, tentativeGScore);
 					fScore.put(neighbor, estimatedTotalCost(neighbor, gScore));
 					if(!openSet.contains(neighbor)) {
@@ -57,73 +60,59 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 				}
 			}
 		}
-		
+
 		return null;
 	}
-	
+
 	private void reconstructPath(Map<GameState, GameState> cameFrom, GameState current, Solution solution) {
 		if(current.getMovesToHere().isEmpty()) {
 			return;
 		}
 		for (Move move : current.getMovesToHere())
 			solution.append(move.inverse());
-		
+
 		if(cameFrom.containsKey(current)) {
 			GameState from = cameFrom.get(current);
 			reconstructPath(cameFrom, from, solution);
 		}
-		
+
 	}
 
-	private int estimatedTotalCost(Node currentState, Map<Node, Integer> gScore) {
+	private int estimatedTotalCost(GameState currentState, Map<GameState, Integer> gScore) {
 		return gScore.get(currentState) + estimatedCostToGoal(currentState);
 	}
 
-	private int estimatedCostToGoal(Node currentState) {
-		int distanceToGoal = currentState.gameState.getDistanceToGoal();
+	private int estimatedCostToGoal(GameState currentState) {
+		int distanceToGoal = currentState.getDistanceToGoal();
 		return 4 * distanceToGoal;
 	}
 	
-	private final class Node implements Comparable<Node> {
-		GameState gameState;
-		
-		private Node(GameState gameState) {
-			this.gameState = gameState;
-		}
+	private Comparator<GameState> getComparator() {
+		return new Comparator<GameState>() {
+			@Override
+			public int compare(GameState state1, GameState state2) {
+				if(state1.equals(state2)) {
+					return 0;
+				} else if(!gScore.containsKey(state1)) {
+					return Integer.MAX_VALUE;
+				}
+				Integer myScore = fScore.get(state1);
+				if(myScore == null) {
+					myScore = estimatedTotalCost(state1, gScore);
+					fScore.put(state1, myScore);
+				}
+				Integer otherScore = fScore.get(state2);
+				if(otherScore == null) {
+					otherScore = estimatedTotalCost(state2, gScore);
+					fScore.put(state2, otherScore);
+				}
+				int score = myScore - otherScore;
+				if(score == 0) {
+					score = Math.random() > 0.5 ? -1 : 1;
+				}
 
-		@Override
-		public int compareTo(Node node) {
-			Integer myScore = fScore.get(this);
-			if(myScore == null) {
-				myScore = estimatedTotalCost(node, gScore);
-				fScore.put(this, myScore);
+				return score;
 			}
-			Integer otherScore = fScore.get(node);
-			if(otherScore == null) {
-				otherScore = estimatedTotalCost(node, gScore);
-				fScore.put(node, otherScore);
-			}
-			int score = myScore - otherScore;
-			if(score == 0) {
-				score = Math.random() > 0.5 ? -1 : 1;
-			}
-			
-			return score;
-		}
-		
-		@Override
-		public int hashCode() {
-			return gameState.hashCode();
-		}
-		
-
-		@Override public boolean equals(Object obj) {
-			if(!(obj instanceof Node)) {
-				return false;
-			}
-			Node other = (Node) obj;
-			return gameState.equals(other.gameState);
-		}
-		
+		};
 	}
 }
