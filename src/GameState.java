@@ -477,6 +477,10 @@ public class GameState {
 			this.move = move;
 		}
 		
+		@Override public String toString() {
+			return box.toString() + " " + move.toString();
+		}
+		
 		@Override public int hashCode() {
 			return box.hashCode() + move.hashCode();
 		}
