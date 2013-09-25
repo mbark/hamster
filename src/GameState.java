@@ -82,6 +82,8 @@ public class GameState {
 	}
 
 	public List<GameState> getNextBoxStates () {
+		if (boxesAreDone())
+			return runToGoalGameStates ();
 		List<GameState> nextStates = new ArrayList<>();
 		
 		List<BoxMove> possibleBoxMoves = new ArrayList<>();
@@ -109,7 +111,6 @@ public class GameState {
 		}
 		return nextStates;
 	}
-	
 
 	private List<GameState> createInitialStates(List<BoxMove> possibleBoxMoves) {
 		List<GameState> initialStates = new ArrayList<>();
@@ -120,6 +121,22 @@ public class GameState {
 			initialStates.add(initialState);
 		}
 		return initialStates;
+	}
+	
+	private List<GameState> runToGoalGameStates() {
+		/*
+		 * Re-use the BFS by fabricating a fake box, next to the end position of the player,
+		 * that we want to push to the end position of the player
+		 */
+		Location playerEndLocation = board.getPlayerEndLocation ();
+		Box dummyBox = new Box(playerEndLocation.move(Move.DOWN));
+		Move dummyMove = Move.UP;
+		BoxMove dummy = new BoxMove(dummyBox, dummyMove);
+		List<BoxMove> dummyList = Collections.singletonList(dummy);
+		List<Move> movesToEnd = findMovePathsBFS(dummyList).get(dummy);
+		GameState endState =
+				new GameState(board, new Player(playerEndLocation), boxes, movesToEnd);
+		return Collections.singletonList(endState);
 	}
 
 	private List<Move> getPossibleMoves (Movable<?> m) {
@@ -289,16 +306,18 @@ public class GameState {
 			return false;
 		}
 		
+		return boxesAreDone();
+	}
+	
+	private boolean boxesAreDone () {
 		for(Box box : boxes) {
-			loc = box.getLocation();
-			c = board.getCharForLocation(loc);
+			Location loc = box.getLocation();
+			char c = board.getCharForLocation(loc);
 			
 			if(c != GOAL) {
 				return false;
 			}
 		}
-		
-		
 		return true;
 	}
 	
