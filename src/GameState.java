@@ -187,6 +187,10 @@ public class GameState {
 		Map<BoxMove, List<Move>> pathsToPossibleBoxMoves = new HashMap<>();
 		for (BoxMove boxMove : possibleBoxMoves) {
 			Location currentLocation = boxMove.box.getLocation().move(boxMove.move);
+			if (currentLocation.equals(player.getLocation())) {
+				pathsToPossibleBoxMoves.put(boxMove, new ArrayList<Move>());
+				continue;
+			}
 			if (!visited.containsKey(currentLocation)) // unreachable boxMove
 				continue;
 			List<Move> path = new ArrayList<>();
