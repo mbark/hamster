@@ -58,16 +58,17 @@ public class GameState {
 	
 	private final Player player;
 	private final Set<Box> boxes;
+	
+	GameState(Board board, Player player, Set<Box> boxes) {
+		this (board, player, boxes, new ArrayList<Move>());
+	}
 
 	// internal constructor
 	GameState(Board board, Player player, Set<Box> boxes, Move lastMove) {
 		this.board = board;
 		this.player = player;
 		this.boxes = boxes;
-		if (lastMove == null)
-			this.movesToHere = Collections.emptyList();
-		else
-			this.movesToHere = Collections.singletonList (lastMove);
+		this.movesToHere = Collections.singletonList(lastMove);
 	}
 
 	GameState(Board board, Player player, Set<Box> boxes, List<Move> movesToHere) {
@@ -173,7 +174,7 @@ public class GameState {
 		Location loc = box.getLocation().move(move);
 		if(isFreeForPlayer(loc)) {
 			Player player = new Player(loc);
-			states.add(new GameState(board, player, boxes, null));
+			states.add(new GameState(board, player, boxes));
 		}
 	}
 
@@ -284,7 +285,7 @@ public class GameState {
 	 */
 	public GameState subGameState(int x, int y, int width, int height) {
 		Board subBoard = board.subBoard(x, y, width, height);
-		return new GameState(subBoard, player, boxes, null);
+		return new GameState(subBoard, player, boxes);
 	}
 
 	public static GameState calculateBoard(List<String> boardStrings) {
@@ -344,7 +345,7 @@ public class GameState {
 				}
 			}
 		}
-		return new GameState(new Board(board, goals), null, boxes, null);
+		return new GameState(new Board(board, goals), null, boxes);
 	}
 	
 	@Override public int hashCode() {
@@ -374,8 +375,10 @@ public class GameState {
 			else
 				matrix[l.getRow()][l.getCol()] = BOX;
 		}
-		Location pl = player.getLocation();
-		matrix[pl.getRow()][pl.getCol()] = PLAYER;
+		if (player != null) {
+			Location pl = player.getLocation();
+			matrix[pl.getRow()][pl.getCol()] = PLAYER;
+		}
 		
 		StringBuilder sb = new StringBuilder();
 		for (int row = 0; row < matrix.length; row++) {
