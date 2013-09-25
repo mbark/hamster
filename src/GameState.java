@@ -187,12 +187,14 @@ public class GameState {
 		Map<BoxMove, List<Move>> pathsToPossibleBoxMoves = new HashMap<>();
 		for (BoxMove boxMove : possibleBoxMoves) {
 			Location currentLocation = boxMove.box.getLocation().move(boxMove.move);
+			if (!visited.containsKey(currentLocation)) // unreachable boxMove
+				continue;
+			// if we already are in the right location for this boxmove
+			// return empty list of moves
 			if (currentLocation.equals(player.getLocation())) {
 				pathsToPossibleBoxMoves.put(boxMove, new ArrayList<Move>());
 				continue;
 			}
-			if (!visited.containsKey(currentLocation)) // unreachable boxMove
-				continue;
 			List<Move> path = new ArrayList<>();
 			while (!currentLocation.equals(player.getLocation())) {
 				Move move = visited.get(currentLocation);
