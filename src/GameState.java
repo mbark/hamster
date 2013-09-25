@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -57,13 +58,13 @@ public class GameState {
 	// this is practically a singleton. can be ignored in equals/hashCode
 	//private final char[][] board;
 	private final Board board;
-	private final List<Move> movesToHere;
+	private final Deque<Move> movesToHere;
 	
 	private final Player player;
 	private final Set<Box> boxes;
 	
 	GameState(Board board, Player player, Set<Box> boxes) {
-		this (board, player, boxes, new ArrayList<Move>());
+		this (board, player, boxes, new LinkedList<Move>());
 	}
 
 	// internal constructor
@@ -71,10 +72,11 @@ public class GameState {
 		this.board = board;
 		this.player = player;
 		this.boxes = boxes;
-		this.movesToHere = Collections.singletonList(lastMove);
+		this.movesToHere = new LinkedList<>();
+		movesToHere.addFirst(lastMove);
 	}
 
-	GameState(Board board, Player player, Set<Box> boxes, List<Move> movesToHere) {
+	GameState(Board board, Player player, Set<Box> boxes, Deque<Move> movesToHere) {
 		this.board = board;
 		this.player = player;
 		this.boxes = boxes;
@@ -96,16 +98,16 @@ public class GameState {
 		if (player == null)
 			return createInitialStates (possibleBoxMoves);
 		
-		Map<BoxMove, List<Move>> movePaths = findMovePathsBFS (possibleBoxMoves);
-		for (Entry<BoxMove, List<Move>> pathEntry : movePaths.entrySet()) {
+		Map<BoxMove, Deque<Move>> movePaths = findMovePathsBFS (possibleBoxMoves);
+		for (Entry<BoxMove, Deque<Move>> pathEntry : movePaths.entrySet()) {
 			BoxMove boxMove = pathEntry.getKey();
-			List<Move> moves = pathEntry.getValue();
+			Deque<Move> moves = pathEntry.getValue();
 			Player movedPlayer = player.move(boxMove.move);
 			Box movedBox = boxMove.box.move(boxMove.move);
 			Set<Box> newBoxes = new HashSet<>(boxes);
 			newBoxes.remove(boxMove.box);
 			newBoxes.add(movedBox);
-			moves.add(boxMove.move);
+			moves.addLast (boxMove.move);
 			GameState state = new GameState(board, movedPlayer, newBoxes, moves);
 			nextStates.add (state);
 		}
@@ -133,7 +135,7 @@ public class GameState {
 		Move dummyMove = Move.UP;
 		BoxMove dummy = new BoxMove(dummyBox, dummyMove);
 		List<BoxMove> dummyList = Collections.singletonList(dummy);
-		List<Move> movesToEnd = findMovePathsBFS(dummyList).get(dummy);
+		Deque<Move> movesToEnd = findMovePathsBFS(dummyList).get(dummy);
 		GameState endState =
 				new GameState(board, new Player(playerEndLocation), boxes, movesToEnd);
 		return Collections.singletonList(endState);
@@ -160,13 +162,14 @@ public class GameState {
 		return possibleMoves;
 	}
 	
-	private Map<BoxMove, List<Move>> findMovePathsBFS(List<BoxMove> possibleBoxMoves) {
+	private Map<BoxMove, Deque<Move>> findMovePathsBFS(List<BoxMove> possibleBoxMoves) {
 		Set<Location> possibleLocations = new HashSet<>();
 		for (BoxMove boxMove : possibleBoxMoves)
 			possibleLocations.add(boxMove.box.getLocation().move(boxMove.move));
 		Queue<Location> queue = new LinkedList<>();
 		queue.add(player.getLocation());
-		Map<Location, Move> visited = new HashMap<>(); 
+		Map<Location, Move> visited = new HashMap<>();
+		visited.put(player.getLocation(), null);
 		
 		while (!queue.isEmpty()) {
 			Location location = queue.poll();
@@ -184,7 +187,7 @@ public class GameState {
 		}
 		
 		//Reconstruct all paths
-		Map<BoxMove, List<Move>> pathsToPossibleBoxMoves = new HashMap<>();
+		Map<BoxMove, Deque<Move>> pathsToPossibleBoxMoves = new HashMap<>();
 		for (BoxMove boxMove : possibleBoxMoves) {
 			Location currentLocation = boxMove.box.getLocation().move(boxMove.move);
 			if (!visited.containsKey(currentLocation)) // unreachable boxMove
@@ -192,13 +195,13 @@ public class GameState {
 			// if we already are in the right location for this boxmove
 			// return empty list of moves
 			if (currentLocation.equals(player.getLocation())) {
-				pathsToPossibleBoxMoves.put(boxMove, new ArrayList<Move>());
+				pathsToPossibleBoxMoves.put(boxMove, new LinkedList<Move>());
 				continue;
 			}
-			List<Move> path = new ArrayList<>();
+			Deque<Move> path = new LinkedList<>();
 			while (!currentLocation.equals(player.getLocation())) {
 				Move move = visited.get(currentLocation);
-				path.add(move);
+				path.addFirst (move);
 				currentLocation = currentLocation.move(move.inverse());
 			}
 			pathsToPossibleBoxMoves.put(boxMove, path);
@@ -379,7 +382,7 @@ public class GameState {
 	 * 
 	 * @return The final {@link Move} before this {@link GameState}
 	 */
-	public List<Move> getMovesToHere () {
+	public Deque<Move> getMovesToHere () {
 		return movesToHere;
 	}
 
