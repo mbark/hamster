@@ -16,7 +16,7 @@ public class BfsAlgorithm implements PathFindingAlgorithm {
 			if (state.isDone())
 				return createSolution (state, startState, visited);
 			
-			for (GameState nextState : state.getNextStates()) {
+			for (GameState nextState : state.getNextBoxStates()) {
 				if (visited.containsKey (nextState))
 					continue;
 				visited.put (nextState, state);
