@@ -161,7 +161,7 @@ public class GameState {
 				Location newLocation = location.move(move);
 				if (visited.containsKey (newLocation) || !isFreeForPlayer(newLocation))
 					continue;
-				visited.put (newLocation, move);
+				visited.put(newLocation, move);
 				queue.add(newLocation);
 			}
 		}
@@ -174,7 +174,7 @@ public class GameState {
 			while (!currentLocation.equals(player.getLocation())) {
 				Move move = visited.get(currentLocation);
 				path.add(move);
-				currentLocation = currentLocation.move(move);
+				currentLocation = currentLocation.move(move.inverse());
 			}
 			pathsToPossibleBoxMoves.put(boxMove, path);
 		}
