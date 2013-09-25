@@ -23,7 +23,7 @@ public class Player implements Movable<Player> {
 		return new Player(location.move(move));
 	}
 
-	public Location getLocation() {
+	@Override public Location getLocation() {
 		return location;
 	}
 

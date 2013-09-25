@@ -3,6 +3,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 /**
@@ -68,16 +70,40 @@ public class GameState {
 			this.movesToHere = Collections.singletonList (lastMove);
 	}
 
+	GameState(Board board, Player player, Set<Box> boxes, List<Move> movesToHere) {
+		this.board = board;
+		this.player = player;
+		this.boxes = boxes;
+		this.movesToHere = movesToHere;
+	}
+
 	public List<GameState> getNextBoxStates () {
 		List<GameState> nextStates = new ArrayList<>();
+		
+		List<BoxMove> possibleBoxMoves = new ArrayList<>();
 		for (Box box : boxes) {
 			List<Move> possibleMoves = getPossibleMoves(box);
-			// TODO breadth first search to each surrounding location
-			// and return a Map<Location, List<Move>> with your findings
+			for (Move move : possibleMoves)
+				possibleBoxMoves.add (new BoxMove(box, move));
+		}
+		
+		Map<BoxMove, List<Move>> movePaths = findMovePathsBFS (possibleBoxMoves);
+		for (Entry<BoxMove, List<Move>> pathEntry : movePaths.entrySet()) {
+			BoxMove boxMove = pathEntry.getKey();
+			List<Move> moves = pathEntry.getValue();
+			Player movedPlayer = player.move(boxMove.move);
+			Box movedBox = boxMove.box.move(boxMove.move);
+			Set<Box> newBoxes = new HashSet<>(boxes);
+			newBoxes.remove(boxMove.box);
+			newBoxes.add(movedBox);
+			moves.add(boxMove.move);
+			GameState state = new GameState(board, movedPlayer, newBoxes, moves);
+			nextStates.add (state);
 		}
 		return nextStates;
 	}
 	
+
 	private List<Move> getPossibleMoves (Movable<?> m) {
 		List<Move> possibleMoves = new ArrayList<>();
 		Location oneUp = m.getLocation().move(Move.UP);
@@ -97,6 +123,11 @@ public class GameState {
 		if (isFreeForPlayer(oneLeft, twoLeft))
 			possibleMoves.add(Move.LEFT);
 		return possibleMoves;
+	}
+	
+	private Map<BoxMove, List<Move>> findMovePathsBFS(List<BoxMove> possibleBoxMoves) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 	/**
@@ -354,5 +385,31 @@ public class GameState {
 			sb.append('\n');
 		}
 		return sb.toString();
+	}
+	
+	/**
+	 * Simple class used to keep track of the move performed on a box.
+	 */
+	static class BoxMove {
+		final Box box;
+		final Move move;
+		
+		public BoxMove(Box box, Move move) {
+			this.box = box;
+			this.move = move;
+		}
+		
+		@Override public int hashCode() {
+			return box.hashCode() + move.hashCode();
+		}
+		
+		@Override public boolean equals(Object o) {
+			if (o == this)
+				return true;
+			if (!(o instanceof BoxMove))
+				return false;
+			BoxMove bm = (BoxMove) o;
+			return box.equals(bm.box) && move.equals(bm.move);
+		}
 	}
 }
