@@ -91,6 +91,9 @@ public class GameState {
 				possibleBoxMoves.add (new BoxMove(box, move));
 		}
 		
+		if (player == null)
+			return createInitialStates (possibleBoxMoves);
+		
 		Map<BoxMove, List<Move>> movePaths = findMovePathsBFS (possibleBoxMoves);
 		for (Entry<BoxMove, List<Move>> pathEntry : movePaths.entrySet()) {
 			BoxMove boxMove = pathEntry.getKey();
@@ -107,6 +110,17 @@ public class GameState {
 		return nextStates;
 	}
 	
+
+	private List<GameState> createInitialStates(List<BoxMove> possibleBoxMoves) {
+		List<GameState> initialStates = new ArrayList<>();
+		for (BoxMove boxMove : possibleBoxMoves) {
+			Player initialPlayer =
+					new Player(boxMove.box.getLocation().move(boxMove.move));
+			GameState initialState = new GameState(board, initialPlayer, boxes);
+			initialStates.add(initialState);
+		}
+		return initialStates;
+	}
 
 	private List<Move> getPossibleMoves (Movable<?> m) {
 		List<Move> possibleMoves = new ArrayList<>();
@@ -138,10 +152,9 @@ public class GameState {
 		Map<Location, Move> visited = new HashMap<>(); 
 		while (!queue.isEmpty()) {
 			Location location = queue.poll();
-			if (possibleLocations.contains(location))
-				possibleLocations.remove(location);
 			if (possibleLocations.isEmpty())
 				break;
+			possibleLocations.remove(location);
 			
 			for (Move move : Move.values()) {
 				Location newLocation = player.getLocation().move(move);

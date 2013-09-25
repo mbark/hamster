@@ -37,7 +37,7 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 			closedSet.add(current);
 			visitedNodes.add(current);
 
-			List<GameState> nextStates = current.getNextStates();
+			List<GameState> nextStates = current.getNextBoxStates();
 			for(GameState neighbor : nextStates) {
 				if(visitedNodes.contains(neighbor)) {
 					continue;
