@@ -52,7 +52,7 @@ public class GameState {
 	// this is practically a singleton. can be ignored in equals/hashCode
 	//private final char[][] board;
 	private final Board board;
-	private final Move lastMove;
+	private final List<Move> movesToHere;
 	
 	private final Player player;
 	private final Set<Box> boxes;
@@ -62,9 +62,18 @@ public class GameState {
 		this.board = board;
 		this.player = player;
 		this.boxes = boxes;
-		this.lastMove = lastMove;
+		if (lastMove == null)
+			this.movesToHere = Collections.emptyList();
+		else
+			this.movesToHere = Collections.singletonList (lastMove);
 	}
 
+	public List<GameState> getNextBoxStates () {
+		List<GameState> nextStates = new ArrayList<>();
+		// TODO HANDLE IT
+		return nextStates;
+	}
+	
 	/**
 	 * Get all the significant {@link GameState} instances that are the result
 	 * of one state change in the map.
@@ -231,8 +240,8 @@ public class GameState {
 	 * 
 	 * @return The final {@link Move} before this {@link GameState}
 	 */
-	public Move getLastMove() {
-		return lastMove;
+	public List<Move> getMovesToHere () {
+		return movesToHere;
 	}
 
 	private static GameState fillBoard(char[][] board, List<String> boardStrings) {

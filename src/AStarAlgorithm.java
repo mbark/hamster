@@ -62,10 +62,11 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 	}
 	
 	private void reconstructPath(Map<GameState, GameState> cameFrom, GameState current, Solution solution) {
-		if(current.getLastMove() == null) {
+		if(current.getMovesToHere().isEmpty()) {
 			return;
 		}
-		solution.append(current.getLastMove().inverse());
+		for (Move move : current.getMovesToHere())
+			solution.append(move.inverse());
 		
 		if(cameFrom.containsKey(current)) {
 			GameState from = cameFrom.get(current);
