@@ -70,8 +70,33 @@ public class GameState {
 
 	public List<GameState> getNextBoxStates () {
 		List<GameState> nextStates = new ArrayList<>();
-		// TODO HANDLE IT
+		for (Box box : boxes) {
+			List<Move> possibleMoves = getPossibleMoves(box);
+			// TODO breadth first search to each surrounding location
+			// and return a Map<Location, List<Move>> with your findings
+		}
 		return nextStates;
+	}
+	
+	private List<Move> getPossibleMoves (Movable<?> m) {
+		List<Move> possibleMoves = new ArrayList<>();
+		Location oneUp = m.getLocation().move(Move.UP);
+		Location twoUp = oneUp.move(Move.UP);
+		Location oneRight = m.getLocation().move(Move.RIGHT);
+		Location twoRight = oneRight.move(Move.RIGHT);
+		Location oneDown = m.getLocation().move(Move.DOWN);
+		Location twoDown = oneDown.move(Move.DOWN);
+		Location oneLeft = m.getLocation().move(Move.LEFT);
+		Location twoLeft = oneLeft.move(Move.LEFT);
+		if (isFreeForPlayer(oneUp, twoUp))
+			possibleMoves.add(Move.UP);
+		if (isFreeForPlayer(oneRight, twoRight))
+			possibleMoves.add(Move.RIGHT);
+		if (isFreeForPlayer(oneDown, twoDown))
+			possibleMoves.add(Move.DOWN);
+		if (isFreeForPlayer(oneLeft, twoLeft))
+			possibleMoves.add(Move.LEFT);
+		return possibleMoves;
 	}
 	
 	/**
@@ -151,8 +176,13 @@ public class GameState {
 		return Arrays.asList (new GameState(board, movedPlayer, boxes, move));
 	}
 	
-	private boolean isFreeForPlayer (Location loc) {
-		return board.isFree(loc) && !boxes.contains(new Box(loc));
+	// is true if all the locations are free
+	// false if any of them isn't
+	private boolean isFreeForPlayer (Location... locations) {
+		for (Location loc : locations)
+			if (!board.isFree(loc) || boxes.contains(new Box(loc)))
+					return false;
+		return true;
 	}
 	
 	private boolean boxCanBePulled(Box box, Player player, Move move) {

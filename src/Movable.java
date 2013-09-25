@@ -16,4 +16,11 @@ public interface Movable<T> {
 	 * @return A new instance of T altered by the move
 	 */
 	T move (Move move);
+	
+	/**
+	 * Get the {@link Location} of this {@link Movable}.
+	 * 
+	 * @return The {@link Location} representing where this instance is
+	 */
+	Location getLocation ();
 }
