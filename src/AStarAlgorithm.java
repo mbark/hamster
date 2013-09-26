@@ -26,12 +26,8 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 
 		while(!openSet.isEmpty()) {
 			GameState current = openSet.pollFirst();
-			if(current.isDone()) {
-				System.out.println("===================");
-				Solution solution = new Solution();
-				reconstructPath(cameFrom, current, solution);
-				return solution;
-			}
+			if(current.isDone())
+				return reconstructPath(cameFrom, current);
 
 			openSet.remove(current);
 			closedSet.add(current);
@@ -59,18 +55,14 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 		return null;
 	}
 
-	private void reconstructPath(Map<GameState, GameState> cameFrom, GameState current, Solution solution) {
-		if(current.getMovesToHere().isEmpty()) {
-			return;
+	private Solution reconstructPath(Map<GameState, GameState> cameFrom, GameState endState) {
+		GameState state = endState;
+		Solution solution = new Solution();
+		while (state != null && !state.getMovesToHere().isEmpty()) {
+			solution.append(state.getMovesToHere());
+			state = cameFrom.get(state);
 		}
-		solution.append(current.getMovesToHere());
-		if(cameFrom.containsKey(current)) {
-			GameState from = cameFrom.get(current);
-			reconstructPath(cameFrom, from, solution);
-		}
-		System.out.println(current.hashCode());
-		System.out.println(current.getMovesToHere());
-		System.out.println(current);
+		return solution;
 	}
 
 	private int estimatedTotalCost(GameState currentState, Map<GameState, Integer> gScore) {

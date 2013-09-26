@@ -110,7 +110,7 @@ public class GameState {
 			Set<Box> newBoxes = new HashSet<>(boxes);
 			newBoxes.remove(boxMove.box);
 			newBoxes.add(movedBox);
-			moves.addFirst (boxMove.move);
+			moves.addLast (boxMove.move);
 			GameState state = new GameState(board, movedPlayer, newBoxes, moves);
 			nextStates.add (state);
 			
@@ -210,7 +210,7 @@ public class GameState {
 			Deque<Move> path = new LinkedList<>();
 			while (!currentLocation.equals(player.getLocation())) {
 				Move move = visited.get(currentLocation);
-				path.addLast (move);
+				path.addFirst (move);
 				currentLocation = currentLocation.move(move.inverse());
 			}
 			pathsToPossibleBoxMoves.put(boxMove, path);
