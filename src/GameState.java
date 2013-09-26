@@ -113,10 +113,6 @@ public class GameState {
 			moves.addLast (boxMove.move);
 			GameState state = new GameState(board, movedPlayer, newBoxes, moves);
 			nextStates.add (state);
-			
-			System.out.println(state.hashCode());
-			System.out.println(moves);
-			System.out.println(state);
 		}
 		return nextStates;
 	}
