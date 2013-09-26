@@ -137,6 +137,9 @@ public class GameState {
 		BoxMove dummy = new BoxMove(dummyBox, dummyMove);
 		List<BoxMove> dummyList = Collections.singletonList(dummy);
 		Deque<Move> movesToEnd = findMovePathsBFS(dummyList).get(dummy);
+		if(movesToEnd == null) {
+			return Collections.emptyList();
+		}
 		GameState endState =
 				new GameState(board, new Player(playerEndLocation), boxes, movesToEnd);
 		return Collections.singletonList(endState);
