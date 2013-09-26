@@ -16,6 +16,7 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 	Map<GameState, Integer> fScore = new HashMap<>();
 
 	@Override public Solution findPathToGoal(GameState start) {
+		Set<GameState> visitedNodes = new HashSet<>();
 		Set<GameState> closedSet = new HashSet<>();
 		TreeSet<GameState> openSet = new TreeSet<>(getComparator());
 		Map<GameState, GameState> cameFrom = new HashMap<>();
@@ -31,9 +32,13 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 
 			openSet.remove(current);
 			closedSet.add(current);
+			visitedNodes.add(current);
 
 			List<GameState> nextStates = current.getNextBoxStates();
 			for(GameState neighbor : nextStates) {
+				if(visitedNodes.contains(neighbor)) {
+					continue;
+				}
 				int tentativeGScore = gScore.get(current) + 1;
 				if(closedSet.contains(neighbor)) {
 					if(tentativeGScore >= gScore.get(neighbor)) {
@@ -47,6 +52,7 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 					fScore.put(neighbor, estimatedTotalCost(neighbor, gScore));
 					if(!openSet.contains(neighbor)) {
 						openSet.add(neighbor);
+						visitedNodes.add(neighbor);
 					}
 				}
 			}
@@ -96,10 +102,10 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 				}
 				int score = myScore - otherScore;
 				if(score == 0) {
-					score = -1;
+					score = Math.random() > 0.5 ? 1 : -1;
 				}
 				
-				return -score;
+				return score;
 			}
 		};
 	}

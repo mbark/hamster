@@ -502,7 +502,7 @@ public class GameState {
 		}
 		
 		@Override public int hashCode() {
-			return box.hashCode() + move.hashCode();
+			return box.hashCode();// + move.hashCode();
 		}
 		
 		@Override public boolean equals(Object o) {
