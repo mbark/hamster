@@ -438,7 +438,7 @@ public class GameState {
 		if(player != null) {
 			hashCode += player.hashCode();
 		}
-		return hashCode + 31*boxes.hashCode();
+		return hashCode + 31*boxes.hashCode() + movesToHere.hashCode();
 	}
 	
 	@Override public boolean equals(Object obj) {
@@ -447,7 +447,9 @@ public class GameState {
 		if (!(obj instanceof GameState))
 			return false;
 		GameState g = (GameState) obj;
-		return player.equals(g.player) && boxes.equals(g.boxes);
+		return player.equals(g.player) &&
+				boxes.equals(g.boxes) &&
+				movesToHere.equals(g.movesToHere);
 	}
 	
 	@Override public String toString() {

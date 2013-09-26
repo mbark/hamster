@@ -59,7 +59,7 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 		GameState state = endState;
 		Solution solution = new Solution();
 		while (state != null && !state.getMovesToHere().isEmpty()) {
-			solution.append(state.getMovesToHere());
+			solution.prepend(state.getMovesToHere());
 			state = cameFrom.get(state);
 		}
 		return solution;

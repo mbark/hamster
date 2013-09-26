@@ -1,7 +1,6 @@
-import java.util.ArrayList;
 import java.util.Deque;
 import java.util.Iterator;
-import java.util.List;
+import java.util.LinkedList;
 
 
 /**
@@ -11,24 +10,19 @@ import java.util.List;
  * @author Jonas Sköld
  */
 public class Solution {
-	private final List<Deque<Move>> path;
-
-	public Solution() {
-		path = new ArrayList<>();
-	}
+	private final Deque<Deque<Move>> path = new LinkedList<>();
 	
-	public void append (Deque<Move> moves) {
-		path.add(moves);
+	public void prepend (Deque<Move> moves) {
+		path.addFirst (moves);
 	}
 	
 	// toString is the char representation of the move sequence
 	@Override public String toString() {
 		StringBuilder sb = new StringBuilder();
-		for(Deque<Move> moves : path) {
-			Iterator<Move> iterator = moves.descendingIterator();
-			while(iterator.hasNext()) {
-				sb.append(iterator.next().inverse().toChar());
-			}
+		for (Iterator<Deque<Move>> outer = path.descendingIterator(); outer.hasNext();) {
+			Deque<Move> moveBatch = outer.next();
+			for (Iterator<Move> inner = moveBatch.descendingIterator(); inner.hasNext();)
+				sb.append(inner.next().inverse().toChar());
 		}
 		return sb.toString();
 	}
