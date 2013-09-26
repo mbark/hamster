@@ -102,15 +102,21 @@ public class GameState {
 		for (Entry<BoxMove, Deque<Move>> pathEntry : movePaths.entrySet()) {
 			BoxMove boxMove = pathEntry.getKey();
 			Deque<Move> moves = pathEntry.getValue();
+			
 			Player playerBeforeBoxMove = new Player(boxMove.box.getLocation().move(boxMove.move));
 			Player movedPlayer = playerBeforeBoxMove.move(boxMove.move);
 			Box movedBox = boxMove.box.move(boxMove.move);
+			
 			Set<Box> newBoxes = new HashSet<>(boxes);
 			newBoxes.remove(boxMove.box);
 			newBoxes.add(movedBox);
 			moves.addFirst (boxMove.move);
 			GameState state = new GameState(board, movedPlayer, newBoxes, moves);
 			nextStates.add (state);
+			
+			System.out.println(state.hashCode());
+			System.out.println(moves);
+			System.out.println(state);
 		}
 		return nextStates;
 	}

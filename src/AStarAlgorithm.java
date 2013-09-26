@@ -16,7 +16,6 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 	Map<GameState, Integer> fScore = new HashMap<>();
 
 	@Override public Solution findPathToGoal(GameState start) {
-		Set<GameState> visitedNodes = new HashSet<>();
 		Set<GameState> closedSet = new HashSet<>();
 		TreeSet<GameState> openSet = new TreeSet<>(getComparator());
 		Map<GameState, GameState> cameFrom = new HashMap<>();
@@ -28,6 +27,7 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 		while(!openSet.isEmpty()) {
 			GameState current = openSet.pollFirst();
 			if(current.isDone()) {
+				System.out.println("===================");
 				Solution solution = new Solution();
 				reconstructPath(cameFrom, current, solution);
 				return solution;
@@ -35,14 +35,9 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 
 			openSet.remove(current);
 			closedSet.add(current);
-			visitedNodes.add(current);
 
 			List<GameState> nextStates = current.getNextBoxStates();
 			for(GameState neighbor : nextStates) {
-				if(visitedNodes.contains(neighbor)) {
-					continue;
-				}
-
 				int tentativeGScore = gScore.get(current) + 1;
 				if(closedSet.contains(neighbor)) {
 					if(tentativeGScore >= gScore.get(neighbor)) {
@@ -68,13 +63,12 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 		if(current.getMovesToHere().isEmpty()) {
 			return;
 		}
-		for (Move move : current.getMovesToHere())
-			solution.append(move.inverse());
-
+		solution.append(current.getMovesToHere());
 		if(cameFrom.containsKey(current)) {
 			GameState from = cameFrom.get(current);
 			reconstructPath(cameFrom, from, solution);
 		}
+		System.out.println(current.hashCode());
 		System.out.println(current.getMovesToHere());
 		System.out.println(current);
 	}
