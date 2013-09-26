@@ -71,8 +71,8 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 
 	private int estimatedCostToGoal(GameState currentState) {
 		int distanceToGoal = currentState.getDistanceToGoal();
-		int nrOfMoves = 0; //currentState.getMovesToHere().size();
-		return 15 * distanceToGoal + 7 * nrOfMoves;
+		int nrOfMoves = currentState.getMovesToHere().size();
+		return 40 * distanceToGoal + 5 * nrOfMoves;
 	}
 	
 	private Comparator<GameState> getComparator() {
