@@ -433,6 +433,14 @@ public class GameState {
 		return new GameState(new Board(board, goals), null, boxes);
 	}
 	
+	public int hashWithoutMoves () {
+		int hashCode = 0;
+		if(player != null) {
+			hashCode += player.hashCode();
+		}
+		return hashCode + 31*boxes.hashCode();
+	}
+	
 	@Override public int hashCode() {
 		int hashCode = 0;
 		if(player != null) {
