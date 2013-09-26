@@ -75,6 +75,8 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 			GameState from = cameFrom.get(current);
 			reconstructPath(cameFrom, from, solution);
 		}
+		System.out.println(current.getMovesToHere());
+		System.out.println(current);
 	}
 
 	private int estimatedTotalCost(GameState currentState, Map<GameState, Integer> gScore) {
@@ -83,8 +85,8 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 
 	private int estimatedCostToGoal(GameState currentState) {
 		int distanceToGoal = currentState.getDistanceToGoal();
-		int nrOfMoves = currentState.getMovesToHere().size();
-		return 4 * distanceToGoal + nrOfMoves;
+		int nrOfMoves = 0; //currentState.getMovesToHere().size();
+		return 15 * distanceToGoal + 7 * nrOfMoves;
 	}
 	
 	private Comparator<GameState> getComparator() {
@@ -108,10 +110,10 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 				}
 				int score = myScore - otherScore;
 				if(score == 0) {
-					score = 1;
+					score = -1;
 				}
-
-				return score;
+				
+				return -score;
 			}
 		};
 	}
