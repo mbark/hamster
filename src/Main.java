@@ -7,8 +7,9 @@ import java.util.List;
 
 public class Main {
 	
-	private static final PathFindingAlgorithm BFS = new BfsAlgorithm();
-	private static final PathFindingAlgorithm A_STAR = new AStarAlgorithm();
+	@SuppressWarnings("unused")
+	private static final PathFindingAlgorithm 	BFS = new BfsAlgorithm(),
+												A_STAR = new AStarAlgorithm();
 	
 	public static final void main(String[] args) throws IOException {
 		List<String> boardStrings = read();
