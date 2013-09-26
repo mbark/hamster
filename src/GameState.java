@@ -102,7 +102,8 @@ public class GameState {
 		for (Entry<BoxMove, Deque<Move>> pathEntry : movePaths.entrySet()) {
 			BoxMove boxMove = pathEntry.getKey();
 			Deque<Move> moves = pathEntry.getValue();
-			Player movedPlayer = player.move(boxMove.move);
+			Player playerBeforeBoxMove = new Player(boxMove.box.getLocation().move(boxMove.move));
+			Player movedPlayer = playerBeforeBoxMove.move(boxMove.move);
 			Box movedBox = boxMove.box.move(boxMove.move);
 			Set<Box> newBoxes = new HashSet<>(boxes);
 			newBoxes.remove(boxMove.box);
