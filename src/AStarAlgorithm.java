@@ -19,7 +19,7 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 		Set<GameState> visitedNodes = new HashSet<>();
 		Set<GameState> closedSet = new HashSet<>();
 		TreeSet<GameState> openSet = new TreeSet<>(getComparator());
-		Map<GameState, GameState> cameFrom = new HashMap<>();
+		Map<GameState, GameState> cameFrom = new GameStateMap();
 
 		gScore.put(start, 0);
 		fScore.put(start, estimatedTotalCost(start, gScore));
