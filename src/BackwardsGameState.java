@@ -357,15 +357,6 @@ public class BackwardsGameState extends AbstractGameState {
 		return fillBoard(board, boardStrings);
 	}
 
-	/**
-	 * Get the {@link Move} instance that caused this {@link BackwardsGameState}.
-	 * 
-	 * @return The final {@link Move} before this {@link BackwardsGameState}
-	 */
-	@Override public Deque<Move> getMovesToHere () {
-		return movesToHere;
-	}
-
 	private static BackwardsGameState fillBoard(char[][] board, List<String> boardStrings) {
 		/*
 		 * Fill the board using the board strings.
@@ -406,33 +397,6 @@ public class BackwardsGameState extends AbstractGameState {
 			}
 		}
 		return new BackwardsGameState(new Board(board, goals), null, boxes);
-	}
-	
-	public int hashWithoutMoves () {
-		int hashCode = 0;
-		if(player != null) {
-			hashCode += player.hashCode();
-		}
-		return hashCode + 31*boxes.hashCode();
-	}
-	
-	@Override public int hashCode() {
-		int hashCode = 0;
-		if(player != null) {
-			hashCode += player.hashCode();
-		}
-		return hashCode + 31*boxes.hashCode() + movesToHere.hashCode();
-	}
-	
-	@Override public boolean equals(Object obj) {
-		if (obj == this)
-			return true;
-		if (!(obj instanceof BackwardsGameState))
-			return false;
-		BackwardsGameState g = (BackwardsGameState) obj;
-		return player.equals(g.player) &&
-				boxes.equals(g.boxes) &&
-				movesToHere.equals(g.movesToHere);
 	}
 	
 	@Override public String toString() {
@@ -477,7 +441,7 @@ public class BackwardsGameState extends AbstractGameState {
 		}
 		
 		@Override public int hashCode() {
-			return box.hashCode();// + move.hashCode();
+			return box.hashCode() + move.hashCode();
 		}
 		
 		@Override public boolean equals(Object o) {

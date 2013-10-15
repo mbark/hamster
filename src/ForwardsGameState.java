@@ -27,11 +27,6 @@ public class ForwardsGameState extends AbstractGameState {
 		return null;
 	}
 
-	@Override public Deque<Move> getMovesToHere() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 	@Override public int getDistanceToGoal() {
 		// TODO Auto-generated method stub
 		return 0;

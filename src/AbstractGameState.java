@@ -30,6 +30,15 @@ public abstract class AbstractGameState implements GameState {
 		this.boxes = boxes;
 		this.movesToHere = movesToHere;
 	}
+
+	/**
+	 * Get the {@link Move} instance that caused this {@link BackwardsGameState}.
+	 * 
+	 * @return The final {@link Move} before this {@link BackwardsGameState}
+	 */
+	@Override public Deque<Move> getMovesToHere () {
+		return movesToHere;
+	}
 	
 	/**
 	 * Examines whether all of the given {@link Location}'s are free from both
@@ -49,7 +58,7 @@ public abstract class AbstractGameState implements GameState {
 		if(player != null) {
 			hashCode += player.hashCode();
 		}
-		return hashCode + 31*boxes.hashCode() + movesToHere.hashCode();
+		return hashCode + 31*boxes.hashCode();
 	}
 	
 	@Override public boolean equals(Object obj) {
@@ -59,7 +68,6 @@ public abstract class AbstractGameState implements GameState {
 			return false;
 		AbstractGameState g = (AbstractGameState) obj;
 		return player.equals(g.player) &&
-				boxes.equals(g.boxes) &&
-				movesToHere.equals(g.movesToHere);
+				boxes.equals(g.boxes);
 	}
 }
