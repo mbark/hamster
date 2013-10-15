@@ -14,6 +14,8 @@ public interface GameState {
 	Deque<Move> getMovesToHere ();
 	int getDistanceToGoal();
 	Set<Box> getBoxes();
+	Location getPlayerLocation ();
+	GameState getPlayerMoveGameState (Location l);
 	
 	/**
 	 * Simple class used to keep track of the move performed on a box.

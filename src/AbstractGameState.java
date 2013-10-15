@@ -1,5 +1,11 @@
+import java.util.Collections;
 import java.util.Deque;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 
 
@@ -44,6 +50,27 @@ public abstract class AbstractGameState implements GameState {
 		return boxes;
 	}
 	
+	@Override public Location getPlayerLocation() {
+		return player.getLocation();
+	}
+	
+	@Override public GameState getPlayerMoveGameState(Location l) {
+		/*
+		 * Re-use the BFS by fabricating a fake box, next the Location l,
+		 * that we want to pull up to the Location l
+		 */
+		Box dummyBox = new Box(l.move(Move.DOWN));
+		Move dummyMove = Move.UP;
+		BoxMove dummy = new BoxMove(dummyBox, dummyMove);
+		List<BoxMove> dummyList = Collections.singletonList(dummy);
+		Deque<Move> movesToEnd = findBackwardsMovePathsBFS(dummyList).get(dummy);
+		if(movesToEnd == null) // can't find path to "start" from here
+			return null;
+		GameState targetState =
+				new BackwardsGameState(board, new Player(l), boxes, movesToEnd);
+		return targetState;
+	}
+	
 	/**
 	 * Examines whether all of the given {@link Location}'s are free from both
 	 * walls and boxes.
@@ -55,6 +82,53 @@ public abstract class AbstractGameState implements GameState {
 			if (!board.isFree(loc) || boxes.contains(new Box(loc)))
 				return false;
 		return true;
+	}
+	
+	protected Map<BoxMove, Deque<Move>> findBackwardsMovePathsBFS (List<BoxMove> possibleBoxMoves) {
+		Set<Location> possibleLocations = new HashSet<>();
+		for (BoxMove boxMove : possibleBoxMoves)
+			possibleLocations.add(boxMove.box.getLocation().move(boxMove.move));
+		Queue<Location> queue = new LinkedList<>();
+		queue.add(player.getLocation());
+		Map<Location, Move> visited = new HashMap<>();
+		visited.put(player.getLocation(), null);
+		
+		while (!queue.isEmpty()) {
+			Location location = queue.poll();
+			if (possibleLocations.isEmpty())
+				break;
+			possibleLocations.remove(location);
+			
+			for (Move move : Move.values()) {
+				Location newLocation = location.move(move);
+				if (visited.containsKey (newLocation) || !isFreeForPlayer(newLocation))
+					continue;
+				visited.put(newLocation, move);
+				queue.add(newLocation);
+			}
+		}
+		
+		//Reconstruct all paths
+		Map<BoxMove, Deque<Move>> pathsToPossibleBoxMoves = new HashMap<>();
+		for (BoxMove boxMove : possibleBoxMoves) {
+			Location currentLocation = boxMove.box.getLocation().move(boxMove.move);
+			if (!visited.containsKey(currentLocation)) // unreachable boxMove
+				continue;
+			// if we already are in the right location for this boxmove
+			// return empty list of moves
+			if (currentLocation.equals(player.getLocation())) {
+				pathsToPossibleBoxMoves.put(boxMove, new LinkedList<Move>());
+				continue;
+			}
+			Deque<Move> path = new LinkedList<>();
+			while (!currentLocation.equals(player.getLocation())) {
+				Move move = visited.get(currentLocation);
+				path.addFirst (move);
+				currentLocation = currentLocation.move(move.inverse());
+			}
+			pathsToPossibleBoxMoves.put(boxMove, path);
+		}
+		return pathsToPossibleBoxMoves;
 	}
 	
 	@Override public int hashCode() {
