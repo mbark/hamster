@@ -13,5 +13,6 @@ public interface PathFindingAlgorithm {
 	 * @return a correct {@link Solution} from the start state 
 	 * to a goal state.
 	 */
-	public abstract Solution findPathToGoal(GameState startState);
+	Solution findPathToGoal(GameState startState);
+	Solution getSolution();
 }

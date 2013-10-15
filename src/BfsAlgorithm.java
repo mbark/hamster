@@ -36,4 +36,10 @@ public class BfsAlgorithm implements PathFindingAlgorithm {
 		
 		return solution;
 	}
+	
+	@Override
+	public Solution getSolution() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

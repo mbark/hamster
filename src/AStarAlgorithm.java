@@ -34,7 +34,7 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 		this.meetingPoint = meetingPoint;
 	}
 
-	@Override public Solution findPathToGoal(GameState start) {
+	public Solution findPathToGoal2(GameState start) {
 		Set<GameState> visitedNodes = new HashSet<>();
 		Set<GameState> closedSet = new HashSet<>();
 		TreeSet<GameState> openSet = new TreeSet<>(getComparator());
@@ -80,7 +80,7 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 		return null;
 	}
 	
-	public Solution findPathToGoal2(GameState start) {
+	@Override public Solution findPathToGoal(GameState start) {
 		Set<GameState> visitedNodes = new HashSet<>();
 		Set<GameState> closedSet = new HashSet<>();
 		TreeSet<GameState> openSet = new TreeSet<>(getComparator());
@@ -138,7 +138,7 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 			latch.countDown();
 			return;
 		}
-		//Check if other thread has found this gamestate
+		//Check if we have found meeting point
 		BoxOnlyGameState boxOnly = new BoxOnlyGameState(current);
 		GameState match = otherThreadVisited.get(boxOnly);
 		if (match != null) {
