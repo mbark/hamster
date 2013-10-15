@@ -3,9 +3,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
@@ -38,16 +40,25 @@ public class Main {
 				new AStarAlgorithm(backwardVisited, forwardVisited, latch, meetingPoint);
 		final GameState start = ForwardsGameState.calculateBoard(boardStrings);
 		final GameState goal = BackwardsGameState.calculateBoard(boardStrings);
-		executor.submit(new Runnable() {
+		final CyclicBarrier barrier = new CyclicBarrier(2);
+		new Thread (new Runnable() {
 			@Override public void run() {
-				forward.findPathToGoal(start);
+				try {
+					forward.findPathToGoal(start, barrier);
+				} catch (InterruptedException | BrokenBarrierException e) {
+					e.printStackTrace();
+				}
 			}
-		});
-		executor.submit(new Runnable() {
+		}).start();
+		new Thread (new Runnable() {
 			@Override public void run() {
-				backward.findPathToGoal(goal);
+				try {
+					backward.findPathToGoal(goal, barrier);
+				} catch (InterruptedException | BrokenBarrierException e) {
+					e.printStackTrace();
+				}
 			}
-		});
+		}).start();
 		latch.await();
 		// TODO get the paths from forward and backward and print it
 		Solution forwardSolution = forward.getSolution();

@@ -1,3 +1,6 @@
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
+
 
 /**
  * The GameTree interface describes an implementation that can solve
@@ -14,5 +17,6 @@ public interface PathFindingAlgorithm {
 	 * to a goal state.
 	 */
 	Solution findPathToGoal(GameState startState);
+	Solution findPathToGoal(GameState startState, CyclicBarrier barrier) throws InterruptedException, BrokenBarrierException;
 	Solution getSolution();
 }

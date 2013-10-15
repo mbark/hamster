@@ -2,6 +2,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
+import java.util.concurrent.CyclicBarrier;
 
 
 
@@ -39,6 +40,12 @@ public class BfsAlgorithm implements PathFindingAlgorithm {
 	
 	@Override
 	public Solution getSolution() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Solution findPathToGoal(GameState startState, CyclicBarrier barrier) {
 		// TODO Auto-generated method stub
 		return null;
 	}

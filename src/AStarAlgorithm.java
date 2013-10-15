@@ -5,8 +5,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -34,7 +36,7 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 		this.meetingPoint = meetingPoint;
 	}
 
-	public Solution findPathToGoal2(GameState start) {
+	public Solution findPathToGoal(GameState start) {
 		Set<GameState> visitedNodes = new HashSet<>();
 		Set<GameState> closedSet = new HashSet<>();
 		TreeSet<GameState> openSet = new TreeSet<>(getComparator());
@@ -80,7 +82,7 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 		return null;
 	}
 	
-	@Override public Solution findPathToGoal(GameState start) {
+	@Override public Solution findPathToGoal(GameState start, CyclicBarrier barrier) throws InterruptedException, BrokenBarrierException {
 		Set<GameState> visitedNodes = new HashSet<>();
 		Set<GameState> closedSet = new HashSet<>();
 		TreeSet<GameState> openSet = new TreeSet<>(getComparator());
@@ -90,10 +92,11 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 		fScore.put(start, estimatedTotalCost(start, gScore));
 		openSet.add(start);
 		visited.put(new BoxOnlyGameState(start), start);
+		barrier.await();
 
 		while(!openSet.isEmpty()) {
 			GameState current = openSet.pollFirst();
-
+			visited.put(new BoxOnlyGameState(current), current);
 			tryToFinish(cameFrom, current);
 			if (solution != null)
 				return solution;
@@ -126,7 +129,9 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 			}
 		}
 
-		return null;
+		solution = new ForwardSolution();
+		latch.countDown();
+		return solution;
 	}
 	
 	private void tryToFinish(Map<GameState, GameState> cameFrom, GameState current) {
