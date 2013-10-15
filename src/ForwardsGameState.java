@@ -56,4 +56,8 @@ public class ForwardsGameState extends AbstractGameState {
 		}
 		return possibleMoves;
 	}
+	
+	public static BackwardsGameState calculateBoard(List<String> boardStrings) {
+		return null;
+	}
 }
