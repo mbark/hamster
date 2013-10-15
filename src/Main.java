@@ -2,20 +2,53 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 
 public class Main {
 	
+	private static final ExecutorService executor = Executors.newFixedThreadPool(2);
+	
 	@SuppressWarnings("unused")
 	private static final PathFindingAlgorithm 	BFS = new BfsAlgorithm(),
-												A_STAR = new AStarAlgorithm();
+												A_STAR = new AStarAlgorithm(null, null);
 	
 	public static final void main(String[] args) throws IOException {
 		List<String> boardStrings = read();
 		GameState gs = BackwardsGameState.calculateBoard(boardStrings);
 		Solution solution = A_STAR.findPathToGoal(gs);
 		System.out.println(solution);
+	}
+	
+	public static final void main2(String... args) throws IOException, InterruptedException {
+		List<String> boardStrings = read();
+		CountDownLatch latch = new CountDownLatch(2);
+		Set<GameState> visited =
+				Collections.newSetFromMap(new ConcurrentHashMap<GameState, Boolean>());
+		final PathFindingAlgorithm forward = new AStarAlgorithm(visited, latch);
+		final PathFindingAlgorithm backward = new AStarAlgorithm(visited, latch);
+		final GameState start = ForwardsGameState.calculateBoard(boardStrings);
+		final GameState goal = BackwardsGameState.calculateBoard(boardStrings);
+		executor.submit(new Runnable() {
+			@Override public void run() {
+				forward.findPathToGoal(start);
+			}
+		});
+		executor.submit(new Runnable() {
+			@Override public void run() {
+				backward.findPathToGoal(goal);
+			}
+		});
+		latch.countDown();
+		latch.countDown();
+		latch.await();
+		// TODO get the paths from forward and backward and print it
 	}
 	
 	public static List<String> read() throws IOException {

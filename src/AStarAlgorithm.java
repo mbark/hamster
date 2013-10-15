@@ -5,14 +5,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * An implementation of the GameTree class which uses the 
  * A* algorithm to traverse the game tree.
  */
 public class AStarAlgorithm implements PathFindingAlgorithm {
+
 	Map<GameState, Integer> gScore  = new HashMap<>();
 	Map<GameState, Integer> fScore = new HashMap<>();
+	
+	// concurrent fields for thread synchronization
+	private final Set<GameState> visited; // will be thread safe
+	private final CountDownLatch latch;
+
+	public AStarAlgorithm(Set<GameState> visited, CountDownLatch latch) {
+		this.visited = visited;
+		this.latch = latch;
+	}
 
 	@Override public Solution findPathToGoal(GameState start) {
 		Set<GameState> visitedNodes = new HashSet<>();
