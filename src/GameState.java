@@ -6,6 +6,7 @@ public interface GameState {
 	
 	public static final char FREE_SPACE = ' ';
 	public static final char WALL = '#';
+	public static final char PLAYER = '@';
 	
 	boolean isDone();
 	List<GameState> getNextBoxStates ();

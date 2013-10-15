@@ -5,10 +5,12 @@ import java.util.Set;
 public class Board {
 	private final char[][] board;
 	private final Set<Goal> goals;
+	private final char goalChar;
 	
-	public Board(char[][] board, Set<Goal> goals) {
+	public Board(char[][] board, Set<Goal> goals, char goalChar) {
 		this.board = board;
 		this.goals = goals;
+		this.goalChar = goalChar;
 	}
 	
 	public Set<Goal> getGoals() {
@@ -26,7 +28,7 @@ public class Board {
 		}
 		
 		char c = board[row][col];
-		return c == BackwardsGameState.FREE_SPACE || c == BackwardsGameState.GOAL || c == BackwardsGameState.PLAYER;
+		return c == GameState.FREE_SPACE || c == goalChar || c == GameState.PLAYER;
 	}
 	
 	public char getCharForLocation(Location loc) {
@@ -39,13 +41,13 @@ public class Board {
 		for (int i = 0; i < height; i++)
 			subBoard[i] = Arrays.copyOfRange(board[row++], col, col + width);
 		//TODO modify goals so that it only contains the goals in the subboard
-		return new Board(subBoard, goals);
+		return new Board(subBoard, goals, goalChar);
 	}
 	
 	public Location getPlayerEndLocation () {
 		for (int row = 0; row < board.length; row++)
 			for (int col = 0; col < board[row].length; col++)
-				if (board[row][col] == BackwardsGameState.PLAYER)
+				if (board[row][col] == GameState.PLAYER)
 					return new Location(col, row);
 		return null;
 	}

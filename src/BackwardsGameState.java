@@ -47,10 +47,7 @@ import java.util.Set;
  */
 public class BackwardsGameState extends AbstractGameState {
 
-	public static final char FREE_SPACE = ' ';
-	public static final char WALL = '#';
 	public static final char GOAL = '$';
-	public static final char PLAYER = '@';
 	public static final char PLAYER_ON_BOX = '+';
 	public static final char BOX = '.';
 	public static final char BOX_ON_GOAL = '*';
@@ -396,7 +393,7 @@ public class BackwardsGameState extends AbstractGameState {
 				}
 			}
 		}
-		return new BackwardsGameState(new Board(board, goals), null, boxes);
+		return new BackwardsGameState(new Board(board, goals, GOAL), null, boxes);
 	}
 	
 	@Override public String toString() {
