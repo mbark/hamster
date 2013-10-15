@@ -1,7 +1,7 @@
 import java.util.Arrays;
 import java.util.Set;
 
-
+// TODO make this not specific for only BackwardsGameState
 public class Board {
 	private final char[][] board;
 	private final Set<Goal> goals;
@@ -26,7 +26,7 @@ public class Board {
 		}
 		
 		char c = board[row][col];
-		return c == GameState.FREE_SPACE || c == GameState.GOAL || c == GameState.PLAYER;
+		return c == BackwardsGameState.FREE_SPACE || c == BackwardsGameState.GOAL || c == BackwardsGameState.PLAYER;
 	}
 	
 	public char getCharForLocation(Location loc) {
@@ -45,7 +45,7 @@ public class Board {
 	public Location getPlayerEndLocation () {
 		for (int row = 0; row < board.length; row++)
 			for (int col = 0; col < board[row].length; col++)
-				if (board[row][col] == GameState.PLAYER)
+				if (board[row][col] == BackwardsGameState.PLAYER)
 					return new Location(col, row);
 		return null;
 	}
