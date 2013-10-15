@@ -7,9 +7,9 @@ import java.util.Set;
 public class ForwardsGameState extends AbstractGameState {
 	
 	public static final char GOAL = '.';
-	public static final char PLAYER_ON_BOX = '*';
+	public static final char PLAYER_ON_GOAL = '+';
 	public static final char BOX = '$';
-	public static final char BOX_ON_GOAL = '+';
+	public static final char BOX_ON_GOAL = '*';
 
 	ForwardsGameState (Board board, Player player, Set<Box> boxes) {
 		super(board, player, boxes);
@@ -76,7 +76,7 @@ public class ForwardsGameState extends AbstractGameState {
 		/*
 		 * Fill the board using the board strings.
 		 */
-		//TODO 
+		Player player = new Player(new Location(-1, -1));
 		Set<Box> boxes = new HashSet<Box>();
 		Set<Goal> goals = new HashSet<Goal>();
 		Box box;
@@ -91,27 +91,28 @@ public class ForwardsGameState extends AbstractGameState {
 				case WALL:
 					board[row][col] = square;
 					break;
-				case PLAYER_ON_BOX:
-					box = new Box(new Location(col, row));
-					boxes.add(box);
+				case PLAYER_ON_GOAL:
+					board[row][col] = GOAL;
+					goals.add(new Goal(new Location(col, row)));
+					player = new Player(new Location(col, row));
+					break;
 				case PLAYER:
-					board[row][col] = PLAYER;
+					board[row][col] = FREE_SPACE;
+					player = new Player(new Location(col, row));
 					break;
 				case BOX_ON_GOAL:
-					box = new Box(new Location(col, row));
-					boxes.add(box);
+					boxes.add(new Box(new Location(col, row)));
 				case GOAL:
 					board[row][col] = GOAL;
 					goals.add(new Goal(new Location(col, row)));
 					break;
 				case BOX:
 					board[row][col] = FREE_SPACE;
-					box = new Box(new Location(col, row));
-					boxes.add(box);
+					boxes.add(new Box(new Location(col, row)));
 					break;
 				}
 			}
 		}
-		return new ForwardsGameState(new Board(board, goals, GOAL), null, boxes);
+		return new ForwardsGameState(new Board(board, goals, GOAL), player, boxes);
 	}
 }
