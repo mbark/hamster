@@ -45,7 +45,7 @@ import java.util.Set;
  * "free space".
  * 
  */
-public class BackwardsGameState implements GameState {
+public class BackwardsGameState extends AbstractGameState {
 
 	public static final char FREE_SPACE = ' ';
 	public static final char WALL = '#';
@@ -55,32 +55,16 @@ public class BackwardsGameState implements GameState {
 	public static final char BOX = '.';
 	public static final char BOX_ON_GOAL = '*';
 
-	// this is practically a singleton. can be ignored in equals/hashCode
-	//private final char[][] board;
-	private final Board board;
-	private final Deque<Move> movesToHere;
-	
-	private final Player player;
-	private final Set<Box> boxes;
-	
-	BackwardsGameState(Board board, Player player, Set<Box> boxes) {
+	BackwardsGameState (Board board, Player player, Set<Box> boxes) {
 		this (board, player, boxes, new LinkedList<Move>());
 	}
 
-	// internal constructor
 	BackwardsGameState(Board board, Player player, Set<Box> boxes, Move lastMove) {
-		this.board = board;
-		this.player = player;
-		this.boxes = boxes;
-		this.movesToHere = new LinkedList<>();
-		movesToHere.addFirst(lastMove);
+		super(board, player, boxes, lastMove);
 	}
 
 	BackwardsGameState(Board board, Player player, Set<Box> boxes, Deque<Move> movesToHere) {
-		this.board = board;
-		this.player = player;
-		this.boxes = boxes;
-		this.movesToHere = movesToHere;
+		super(board, player, boxes, movesToHere);
 	}
 
 	@Override public List<GameState> getNextBoxStates () {
@@ -289,15 +273,6 @@ public class BackwardsGameState implements GameState {
 
 		// at this point, no boxes were moved
 		return Arrays.asList (new BackwardsGameState(board, movedPlayer, boxes, move));
-	}
-	
-	// is true if all the locations are free
-	// false if any of them isn't
-	private boolean isFreeForPlayer (Location... locations) {
-		for (Location loc : locations)
-			if (!board.isFree(loc) || boxes.contains(new Box(loc)))
-					return false;
-		return true;
 	}
 	
 	private boolean boxCanBePulled(Box box, Player player, Move move) {
