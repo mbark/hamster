@@ -14,7 +14,7 @@ public class ForwardSolution extends AbstractSolution {
 		for (Iterator<Deque<Move>> outer = path.iterator(); outer.hasNext();) {
 			Deque<Move> moveBatch = outer.next();
 			for (Iterator<Move> inner = moveBatch.iterator(); inner.hasNext();)
-				sb.append(inner.next().inverse().toChar());
+				sb.append(inner.next().toChar());
 		}
 		return sb.toString();
 	}

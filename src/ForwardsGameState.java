@@ -59,7 +59,7 @@ public class ForwardsGameState extends AbstractGameState {
 			
 			Player playerBeforeBoxMove = new Player(box.getLocation().move(boxMove.move));
 			Player movedPlayer = playerBeforeBoxMove.move(realMove);
-			Box movedBox = box.move(boxMove.move);
+			Box movedBox = box.move(realMove);
 			
 			Set<Box> newBoxes = new HashSet<>(boxes);
 			newBoxes.remove(box);
