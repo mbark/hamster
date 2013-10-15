@@ -71,6 +71,24 @@ public abstract class AbstractGameState implements GameState {
 		return targetState;
 	}
 	
+	@Override public int getDistanceToGoal() {
+		int totalDistance = 0;
+		
+		Set<Goal> goals = board.getGoals();
+		for(Goal goal : goals) {
+			int shortestDistance = Integer.MAX_VALUE;
+			for(Box box : boxes) {
+				int distance = Location.distance(goal.getLocation(), box.getLocation());
+				if(distance < shortestDistance) {
+					shortestDistance = distance;
+				}
+			}
+			totalDistance += shortestDistance;
+		}
+		
+		return totalDistance;
+	}
+	
 	/**
 	 * Examines whether all of the given {@link Location}'s are free from both
 	 * walls and boxes.

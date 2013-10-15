@@ -2,7 +2,9 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 public class ForwardsGameState extends AbstractGameState {
 	
@@ -24,8 +26,15 @@ public class ForwardsGameState extends AbstractGameState {
 	}
 
 	@Override public boolean isDone() {
-		// TODO Auto-generated method stub
-		return false;
+		for(Box box : boxes) {
+			Location loc = box.getLocation();
+			char c = board.getCharForLocation(loc);
+			
+			if(c != GOAL) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	@Override public List<GameState> getNextBoxStates() {
@@ -37,13 +46,29 @@ public class ForwardsGameState extends AbstractGameState {
 			for (Move move : possibleMoves)
 				possibleBoxMoves.add (new BoxMove(box, move));
 		}
-		// TODO lol
+		
+		// this generates BoxMoves mapped to the paths they would require
+		// if you were to PULL them. we therefore need to treat them
+		// "backwards" to obtain forwards GameStates
+		Map<BoxMove, Deque<Move>> movePaths = findBackwardsMovePathsBFS(possibleBoxMoves);
+		for (Entry<BoxMove, Deque<Move>> pathEntry : movePaths.entrySet()) {
+			BoxMove boxMove = pathEntry.getKey();
+			Deque<Move> moves = pathEntry.getValue();
+			Box box = boxMove.box;
+			Move realMove = boxMove.move.inverse(); // here is the double backwards part
+			
+			Player playerBeforeBoxMove = new Player(box.getLocation().move(boxMove.move));
+			Player movedPlayer = playerBeforeBoxMove.move(realMove);
+			Box movedBox = box.move(boxMove.move);
+			
+			Set<Box> newBoxes = new HashSet<>(boxes);
+			newBoxes.remove(box);
+			newBoxes.add(movedBox);
+			moves.addLast (realMove); // TODO
+			GameState state = new ForwardsGameState(board, movedPlayer, newBoxes, moves);
+			nextStates.add (state);
+		}
 		return nextStates;
-	}
-
-	@Override public int getDistanceToGoal() {
-		// TODO Auto-generated method stub
-		return 0;
 	}
 
 	private List<Move> getPossibleMoves (Movable<?> m) {
