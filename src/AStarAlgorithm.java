@@ -9,7 +9,6 @@ import java.util.TreeSet;
 /**
  * An implementation of the GameTree class which uses the 
  * A* algorithm to traverse the game tree.
- * @author Jonas Sköld
  */
 public class AStarAlgorithm implements PathFindingAlgorithm {
 	Map<GameState, Integer> gScore  = new HashMap<>();
@@ -61,19 +60,16 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 		return null;
 	}
 
-	//TODO Different implementations for Forward and Backward
 	private Solution reconstructPath(Map<GameState, GameState> cameFrom, GameState endState) {
 		GameState state = endState;
-		if (endState instanceof BackwardsGameState) {
-			Solution solution = new BackwardSolution();
-			while (state != null && !state.getMovesToHere().isEmpty()) {
-				solution.prepend(state.getMovesToHere());
-				state = cameFrom.get(state);
-			}
-			return solution;
-		} else {
-			return null;
+		Solution solution = (endState instanceof BackwardsGameState) 
+			? new BackwardSolution()
+			: new ForwardSolution();
+		while (state != null && !state.getMovesToHere().isEmpty()) {
+			solution.prepend(state.getMovesToHere());
+			state = cameFrom.get(state);
 		}
+		return solution;
 	}
 
 	private int estimatedTotalCost(GameState currentState, Map<GameState, Integer> gScore) {
