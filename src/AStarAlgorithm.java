@@ -61,14 +61,19 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 		return null;
 	}
 
+	//TODO Different implementations for Forward and Backward
 	private Solution reconstructPath(Map<GameState, GameState> cameFrom, GameState endState) {
 		GameState state = endState;
-		Solution solution = new Solution();
-		while (state != null && !state.getMovesToHere().isEmpty()) {
-			solution.prepend(state.getMovesToHere());
-			state = cameFrom.get(state);
+		if (endState instanceof BackwardsGameState) {
+			Solution solution = new BackwardSolution();
+			while (state != null && !state.getMovesToHere().isEmpty()) {
+				solution.prepend(state.getMovesToHere());
+				state = cameFrom.get(state);
+			}
+			return solution;
+		} else {
+			return null;
 		}
-		return solution;
 	}
 
 	private int estimatedTotalCost(GameState currentState, Map<GameState, Integer> gScore) {

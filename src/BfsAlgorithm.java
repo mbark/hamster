@@ -28,7 +28,7 @@ public class BfsAlgorithm implements PathFindingAlgorithm {
 
 	private Solution createSolution(GameState state, GameState startState,
 									Map<GameState, GameState> visited) {
-		Solution solution = new Solution();
+		Solution solution = new BackwardSolution();
 		while (!state.getMovesToHere().isEmpty()) {
 			solution.prepend(state.getMovesToHere());
 			state = visited.get(state);
