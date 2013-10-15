@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -18,11 +19,11 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 	Map<GameState, Integer> fScore = new HashMap<>();
 	
 	// concurrent fields for thread synchronization
-	private final Set<BoxOnlyGameState> visited; // will be thread safe
+	private final ConcurrentMap<BoxOnlyGameState, GameState> visited; // will be thread safe
 	private final CountDownLatch latch;
 	private final AtomicReference<BoxOnlyGameState> meetingPoint;
 
-	public AStarAlgorithm(Set<BoxOnlyGameState> visited, CountDownLatch latch,
+	public AStarAlgorithm(ConcurrentMap<BoxOnlyGameState, GameState> visited, CountDownLatch latch,
 			 AtomicReference<BoxOnlyGameState> meetingPoint) {
 		this.visited = visited;
 		this.latch = latch;

@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -30,8 +31,7 @@ public class Main {
 	public static final void main2(String... args) throws IOException, InterruptedException {
 		List<String> boardStrings = read();
 		CountDownLatch latch = new CountDownLatch(2);
-		Set<BoxOnlyGameState> visited =
-				Collections.newSetFromMap(new ConcurrentHashMap<BoxOnlyGameState, Boolean>());
+		ConcurrentMap<BoxOnlyGameState, GameState> visited = new ConcurrentHashMap<>();
 		AtomicReference<BoxOnlyGameState> meetingPoint = new AtomicReference<>();
 		final PathFindingAlgorithm forward = new AStarAlgorithm(visited, latch, meetingPoint);
 		final PathFindingAlgorithm backward = new AStarAlgorithm(visited, latch, meetingPoint);

@@ -8,12 +8,15 @@ public class BoxOnlyGameState {
 	}
 
 	@Override public int hashCode() {
-		// TODO Auto-generated method stub
-		return super.hashCode();
+		return state.getBoxes().hashCode();
 	}
 
 	@Override public boolean equals(Object obj) {
-		// TODO Auto-generated method stub
-		return super.equals(obj);
+		if (obj == this)
+			return true;
+		if (!(obj instanceof BoxOnlyGameState))
+			return false;
+		BoxOnlyGameState b = (BoxOnlyGameState) obj;
+		return state.getBoxes().equals(b.state.getBoxes());
 	}
 }
