@@ -130,6 +130,14 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 	}
 	
 	private void tryToFinish(Map<GameState, GameState> cameFrom, GameState current) {
+		//Check if other thread has found meeting point
+		BoxOnlyGameState rendezVouz = meetingPoint.get();
+		if (rendezVouz != null) {
+			GameState match = visited.get(rendezVouz);
+			solution = reconstructPath(cameFrom, match);
+			latch.countDown();
+			return;
+		}
 		//Check if other thread has found this gamestate
 		BoxOnlyGameState boxOnly = new BoxOnlyGameState(current);
 		GameState match = otherThreadVisited.get(boxOnly);
@@ -138,16 +146,26 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 			Location l = match.getPlayerLocation();
 			GameState linkingGameState = current.getPlayerMoveGameState(l);
 			if (linkingGameState != null) {
-				//If so, mark meeting point
-				meetingPoint.set(boxOnly);
-				
-				//reconstruct path
-				cameFrom.put(linkingGameState, current);
-				solution = reconstructPath(cameFrom, linkingGameState);
-				
-				//mark as done
-				latch.countDown();
+				//If so, try to set meeting point
+				if (setMeetingPoint(boxOnly)) {
+					//reconstruct path
+					cameFrom.put(linkingGameState, current);
+					solution = reconstructPath(cameFrom, linkingGameState);
+					
+					//mark as done
+					latch.countDown();
+				}
 			}
+		}
+	}
+	
+	private boolean setMeetingPoint(BoxOnlyGameState boxOnly) {
+		synchronized (meetingPoint) {
+			if (meetingPoint.get() == null) {
+				meetingPoint.set(boxOnly);
+				return true;
+			}
+			return false;
 		}
 	}
 
