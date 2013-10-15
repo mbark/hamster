@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * An implementation of the GameTree class which uses the 
@@ -17,12 +18,15 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 	Map<GameState, Integer> fScore = new HashMap<>();
 	
 	// concurrent fields for thread synchronization
-	private final Set<GameState> visited; // will be thread safe
+	private final Set<BoxOnlyGameState> visited; // will be thread safe
 	private final CountDownLatch latch;
+	private final AtomicReference<BoxOnlyGameState> meetingPoint;
 
-	public AStarAlgorithm(Set<GameState> visited, CountDownLatch latch) {
+	public AStarAlgorithm(Set<BoxOnlyGameState> visited, CountDownLatch latch,
+			 AtomicReference<BoxOnlyGameState> meetingPoint) {
 		this.visited = visited;
 		this.latch = latch;
+		this.meetingPoint = meetingPoint;
 	}
 
 	@Override public Solution findPathToGoal(GameState start) {
@@ -121,4 +125,6 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 			}
 		};
 	}
+	
+	
 }

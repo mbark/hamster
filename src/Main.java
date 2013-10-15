@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicReference;
 
 
 public class Main {
@@ -17,7 +18,7 @@ public class Main {
 	
 	@SuppressWarnings("unused")
 	private static final PathFindingAlgorithm 	BFS = new BfsAlgorithm(),
-												A_STAR = new AStarAlgorithm(null, null);
+												A_STAR = new AStarAlgorithm(null, null, null);
 	
 	public static final void main(String[] args) throws IOException {
 		List<String> boardStrings = read();
@@ -29,10 +30,11 @@ public class Main {
 	public static final void main2(String... args) throws IOException, InterruptedException {
 		List<String> boardStrings = read();
 		CountDownLatch latch = new CountDownLatch(2);
-		Set<GameState> visited =
-				Collections.newSetFromMap(new ConcurrentHashMap<GameState, Boolean>());
-		final PathFindingAlgorithm forward = new AStarAlgorithm(visited, latch);
-		final PathFindingAlgorithm backward = new AStarAlgorithm(visited, latch);
+		Set<BoxOnlyGameState> visited =
+				Collections.newSetFromMap(new ConcurrentHashMap<BoxOnlyGameState, Boolean>());
+		AtomicReference<BoxOnlyGameState> meetingPoint = new AtomicReference<>();
+		final PathFindingAlgorithm forward = new AStarAlgorithm(visited, latch, meetingPoint);
+		final PathFindingAlgorithm backward = new AStarAlgorithm(visited, latch, meetingPoint);
 		final GameState start = ForwardsGameState.calculateBoard(boardStrings);
 		final GameState goal = BackwardsGameState.calculateBoard(boardStrings);
 		executor.submit(new Runnable() {
