@@ -79,7 +79,6 @@ public class ForwardsGameState extends AbstractGameState {
 		Player player = new Player(new Location(-1, -1));
 		Set<Box> boxes = new HashSet<Box>();
 		Set<Goal> goals = new HashSet<Goal>();
-		Box box;
 		for (int row = 0; row < board.length; row++) {
 			String rowString = boardStrings.get(row);
 			for (int col = 0; col < board[row].length; col++) {
@@ -114,5 +113,34 @@ public class ForwardsGameState extends AbstractGameState {
 			}
 		}
 		return new ForwardsGameState(new Board(board, goals, GOAL), player, boxes);
+	}
+	
+	@Override public String toString() {
+		char[][] matrix = board.getBoardMatrix ();
+		for (Box box : boxes) {
+			Location l = box.getLocation();
+			char c = board.getCharForLocation(l);
+			if (c == GOAL)
+				matrix[l.getRow()][l.getCol()] = BOX_ON_GOAL;
+			else
+				matrix[l.getRow()][l.getCol()] = BOX;
+		}
+		if (player != null) {
+			Location pl = player.getLocation();
+			char c = board.getCharForLocation(pl);
+			if (c == GOAL)
+				matrix[pl.getRow()][pl.getCol()] = PLAYER_ON_GOAL;
+			else
+				matrix[pl.getRow()][pl.getCol()] = PLAYER;
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		for (int row = 0; row < matrix.length; row++) {
+			for (int col = 0; col < matrix[row].length; col++) {
+				sb.append(matrix[row][col]);
+			}
+			sb.append('\n');
+		}
+		return sb.toString();
 	}
 }

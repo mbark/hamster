@@ -40,6 +40,10 @@ public abstract class AbstractGameState implements GameState {
 		return movesToHere;
 	}
 	
+	@Override public Set<Box> getBoxes() {
+		return boxes;
+	}
+	
 	/**
 	 * Examines whether all of the given {@link Location}'s are free from both
 	 * walls and boxes.

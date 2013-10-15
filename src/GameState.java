@@ -1,5 +1,6 @@
 import java.util.Deque;
 import java.util.List;
+import java.util.Set;
 
 
 public interface GameState {
@@ -12,6 +13,7 @@ public interface GameState {
 	List<GameState> getNextBoxStates ();
 	Deque<Move> getMovesToHere ();
 	int getDistanceToGoal();
+	Set<Box> getBoxes();
 	
 	/**
 	 * Simple class used to keep track of the move performed on a box.
