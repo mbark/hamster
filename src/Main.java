@@ -2,9 +2,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
@@ -19,7 +17,7 @@ public class Main {
 	
 	@SuppressWarnings("unused")
 	private static final PathFindingAlgorithm 	BFS = new BfsAlgorithm(),
-												A_STAR = new AStarAlgorithm(null, null, null);
+												A_STAR = new AStarAlgorithm(null, null, null, null);
 	
 	public static final void main(String[] args) throws IOException {
 		List<String> boardStrings = read();
@@ -31,10 +29,13 @@ public class Main {
 	public static final void main2(String... args) throws IOException, InterruptedException {
 		List<String> boardStrings = read();
 		CountDownLatch latch = new CountDownLatch(2);
-		ConcurrentMap<BoxOnlyGameState, GameState> visited = new ConcurrentHashMap<>();
+		ConcurrentMap<BoxOnlyGameState, GameState> forwardVisited = new ConcurrentHashMap<>();
+		ConcurrentMap<BoxOnlyGameState, GameState> backwardVisited = new ConcurrentHashMap<>();
 		AtomicReference<BoxOnlyGameState> meetingPoint = new AtomicReference<>();
-		final PathFindingAlgorithm forward = new AStarAlgorithm(visited, latch, meetingPoint);
-		final PathFindingAlgorithm backward = new AStarAlgorithm(visited, latch, meetingPoint);
+		final PathFindingAlgorithm forward =
+				new AStarAlgorithm(forwardVisited, backwardVisited, latch, meetingPoint);
+		final PathFindingAlgorithm backward =
+				new AStarAlgorithm(backwardVisited, forwardVisited, latch, meetingPoint);
 		final GameState start = ForwardsGameState.calculateBoard(boardStrings);
 		final GameState goal = BackwardsGameState.calculateBoard(boardStrings);
 		executor.submit(new Runnable() {
@@ -47,8 +48,6 @@ public class Main {
 				backward.findPathToGoal(goal);
 			}
 		});
-		latch.countDown();
-		latch.countDown();
 		latch.await();
 		// TODO get the paths from forward and backward and print it
 	}

@@ -19,13 +19,17 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 	Map<GameState, Integer> fScore = new HashMap<>();
 	
 	// concurrent fields for thread synchronization
-	private final ConcurrentMap<BoxOnlyGameState, GameState> visited; // will be thread safe
+	private final ConcurrentMap<BoxOnlyGameState, GameState> visited; 
+	private final ConcurrentMap<BoxOnlyGameState, GameState> otherThreadVisited; 
 	private final CountDownLatch latch;
 	private final AtomicReference<BoxOnlyGameState> meetingPoint;
+	private Solution solution = null;
 
-	public AStarAlgorithm(ConcurrentMap<BoxOnlyGameState, GameState> visited, CountDownLatch latch,
+	public AStarAlgorithm(ConcurrentMap<BoxOnlyGameState, GameState> visited, 
+			ConcurrentMap<BoxOnlyGameState, GameState> otherThreadVisited, CountDownLatch latch,
 			 AtomicReference<BoxOnlyGameState> meetingPoint) {
 		this.visited = visited;
+		this.otherThreadVisited = otherThreadVisited;
 		this.latch = latch;
 		this.meetingPoint = meetingPoint;
 	}
@@ -74,6 +78,77 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 		}
 
 		return null;
+	}
+	
+	public Solution findPathToGoal2(GameState start) {
+		Set<GameState> visitedNodes = new HashSet<>();
+		Set<GameState> closedSet = new HashSet<>();
+		TreeSet<GameState> openSet = new TreeSet<>(getComparator());
+		Map<GameState, GameState> cameFrom = new GameStateMap();
+
+		gScore.put(start, 0);
+		fScore.put(start, estimatedTotalCost(start, gScore));
+		openSet.add(start);
+		visited.put(new BoxOnlyGameState(start), start);
+
+		while(!openSet.isEmpty()) {
+			GameState current = openSet.pollFirst();
+
+			tryToFinish(cameFrom, current);
+			if (solution != null)
+				return solution;
+			
+			openSet.remove(current);
+			closedSet.add(current);
+			visitedNodes.add(current);
+
+			List<GameState> nextStates = current.getNextBoxStates();
+			for(GameState neighbor : nextStates) {
+				if(visitedNodes.contains(neighbor)) {
+					continue;
+				}
+				int tentativeGScore = gScore.get(current) + 1;
+				if(closedSet.contains(neighbor)) {
+					if(tentativeGScore >= gScore.get(neighbor)) {
+						continue;
+					}
+				}
+
+				if(!openSet.contains(neighbor) || tentativeGScore < gScore.get(neighbor)) {
+					cameFrom.put(neighbor, current);
+					gScore.put(neighbor, tentativeGScore);
+					fScore.put(neighbor, estimatedTotalCost(neighbor, gScore));
+					if(!openSet.contains(neighbor)) {
+						openSet.add(neighbor);
+						visitedNodes.add(neighbor);
+					}
+				}
+			}
+		}
+
+		return null;
+	}
+	
+	private void tryToFinish(Map<GameState, GameState> cameFrom, GameState current) {
+		//Check if other thread has found this gamestate
+		BoxOnlyGameState boxOnly = new BoxOnlyGameState(current);
+		GameState match = otherThreadVisited.get(boxOnly);
+		if (match != null) {
+			//If so, check if I can go to the player position of that gamestate
+			Location l = match.getPlayerLocation();
+			GameState linkingGameState = current.getPlayerMoveGameState(l);
+			if (linkingGameState != null) {
+				//If so, mark meeting point
+				meetingPoint.set(boxOnly);
+				
+				//reconstruct path
+				cameFrom.put(linkingGameState, current);
+				solution = reconstructPath(cameFrom, linkingGameState);
+				
+				//mark as done
+				latch.countDown();
+			}
+		}
 	}
 
 	private Solution reconstructPath(Map<GameState, GameState> cameFrom, GameState endState) {
@@ -127,5 +202,7 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 		};
 	}
 	
-	
+	public Solution getSolution() {
+		return solution;
+	}
 }
