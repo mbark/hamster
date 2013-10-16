@@ -45,6 +45,10 @@ public class Board {
 		return board[loc.getRow()][loc.getCol()];
 	}
 	
+	public boolean isGoal (Location l) {
+		return getCharForLocation(l) == goalChar;
+	}
+	
 	
 	public Board subBoard(int col, int row, int width, int height) {
 		char[][] subBoard = new char[height][width];

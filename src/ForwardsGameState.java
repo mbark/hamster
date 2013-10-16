@@ -65,10 +65,41 @@ public class ForwardsGameState extends AbstractGameState {
 			newBoxes.remove(box);
 			newBoxes.add(movedBox);
 			moves.addLast (realMove);
-			GameState state = new ForwardsGameState(board, movedPlayer, newBoxes, moves);
-			nextStates.add (state);
+			ForwardsGameState state = new ForwardsGameState(board, movedPlayer, newBoxes, moves);
+			if (!isDeadlockState(state, movedBox))
+				nextStates.add (state);
 		}
 		return nextStates;
+	}
+	
+	private boolean isDeadlockState (ForwardsGameState state, Box movedBox) {
+		Set<Box> visitedBoxes = new HashSet<>();
+		return isDeadlockStateRecursive (state, movedBox, visitedBoxes);
+	}
+
+	private boolean isDeadlockStateRecursive(ForwardsGameState state, Box box,
+			Set<Box> visitedBoxes) {
+		visitedBoxes.add(box);
+		if (board.isGoal(box.getLocation()))
+			return false; // treat goals as non-deadlocks
+		if (!state.getPossibleMoves(box).isEmpty())
+			return false;
+		
+		List<Box> adjacentBoxes = getAdjacentBoxes(box, state.getBoxes(), visitedBoxes);
+		for (Box adjacentBox : adjacentBoxes)
+			if (!isDeadlockStateRecursive(state, adjacentBox, visitedBoxes))
+				return false;
+		return true;
+	}
+	
+	private List<Box> getAdjacentBoxes (Box box, Set<Box> newBoxes, Set<Box> visitedBoxes) {
+		List<Box> adjacentBoxes = new ArrayList<>();
+		for (Move move : Move.values()) {
+			Box adjacent = box.move(move);
+			if (newBoxes.contains(adjacent) && !visitedBoxes.contains(adjacent))
+				adjacentBoxes.add(adjacent);
+		}
+		return adjacentBoxes;
 	}
 
 	private List<Move> getPossibleMoves (Movable<?> m) {
@@ -93,8 +124,6 @@ public class ForwardsGameState extends AbstractGameState {
 				possibleMoves.add(Move.LEFT);
 			}
 		}
-//		System.out.println(m + " " + possibleMoves);
-//		System.out.println(toString());
 		return possibleMoves;
 	}
 	
