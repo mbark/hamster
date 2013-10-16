@@ -17,6 +17,6 @@ public interface PathFindingAlgorithm {
 	 * to a goal state.
 	 */
 	Solution findPathToGoal(GameState startState);
-	Solution findPathToGoal(GameState startState, CyclicBarrier barrier) throws InterruptedException, BrokenBarrierException;
+	void findPathToGoal(GameState startState, CyclicBarrier barrier) throws InterruptedException, BrokenBarrierException;
 	Solution getSolution();
 }

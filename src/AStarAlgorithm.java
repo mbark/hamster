@@ -25,7 +25,7 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 	private final ConcurrentMap<BoxOnlyGameState, GameState> otherThreadVisited; 
 	private final CountDownLatch latch;
 	private final AtomicReference<BoxOnlyGameState> meetingPoint;
-	private Solution solution = null;
+	private final Map<GameState, GameState> cameFrom = new HashMap<>();
 
 	public AStarAlgorithm(ConcurrentMap<BoxOnlyGameState, GameState> visited, 
 			ConcurrentMap<BoxOnlyGameState, GameState> otherThreadVisited, CountDownLatch latch,
@@ -40,7 +40,6 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 		Set<GameState> visitedNodes = new HashSet<>();
 		Set<GameState> closedSet = new HashSet<>();
 		TreeSet<GameState> openSet = new TreeSet<>(getComparator());
-		Map<GameState, GameState> cameFrom = new GameStateMap();
 
 		gScore.put(start, 0);
 		fScore.put(start, estimatedTotalCost(start, gScore));
@@ -51,7 +50,6 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 			if(current.isDone())
 				return reconstructPath(cameFrom, current);
 
-			openSet.remove(current);
 			closedSet.add(current);
 			visitedNodes.add(current);
 
@@ -82,11 +80,10 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 		return null;
 	}
 	
-	@Override public Solution findPathToGoal(GameState start, CyclicBarrier barrier) throws InterruptedException, BrokenBarrierException {
+	@Override public void findPathToGoal(GameState start, CyclicBarrier barrier) throws InterruptedException, BrokenBarrierException {
 		Set<GameState> visitedNodes = new HashSet<>();
 		Set<GameState> closedSet = new HashSet<>();
 		TreeSet<GameState> openSet = new TreeSet<>(getComparator());
-		Map<GameState, GameState> cameFrom = new GameStateMap();
 
 		gScore.put(start, 0);
 		fScore.put(start, estimatedTotalCost(start, gScore));
@@ -97,11 +94,12 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 		while(!openSet.isEmpty()) {
 			GameState current = openSet.pollFirst();
 			visited.put(new BoxOnlyGameState(current), current);
-			tryToFinish(cameFrom, current);
-			if (solution != null)
-				return solution;
+			if (checkMeetingPoint(cameFrom) || tryToFindMeetingPoint(cameFrom, current)) {
+				//mark as done
+				latch.countDown();
+				return;
+			}
 			
-			openSet.remove(current);
 			closedSet.add(current);
 			visitedNodes.add(current);
 
@@ -128,21 +126,17 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 				}
 			}
 		}
-
-		solution = new ForwardSolution();
 		latch.countDown();
-		return solution;
+		return;
 	}
 	
-	private void tryToFinish(Map<GameState, GameState> cameFrom, GameState current) {
+	private boolean checkMeetingPoint (Map<GameState, GameState> cameFrom) {
 		//Check if other thread has found meeting point
 		BoxOnlyGameState rendezVouz = meetingPoint.get();
-		if (rendezVouz != null) {
-			GameState match = visited.get(rendezVouz);
-			solution = reconstructPath(cameFrom, match);
-			latch.countDown();
-			return;
-		}
+		return rendezVouz != null;
+	}
+	
+	private boolean tryToFindMeetingPoint (Map<GameState, GameState> cameFrom, GameState current) {
 		//Check if we have found meeting point
 		BoxOnlyGameState boxOnly = new BoxOnlyGameState(current);
 		GameState match = otherThreadVisited.get(boxOnly);
@@ -153,15 +147,13 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 			if (linkingGameState != null) {
 				//If so, try to set meeting point
 				if (setMeetingPoint(boxOnly)) {
-					//reconstruct path
 					cameFrom.put(linkingGameState, current);
-					solution = reconstructPath(cameFrom, linkingGameState);
-					
-					//mark as done
-					latch.countDown();
+					visited.put(new BoxOnlyGameState(linkingGameState), linkingGameState);
+					return true;
 				}
 			}
 		}
+		return false;
 	}
 	
 	private boolean setMeetingPoint(BoxOnlyGameState boxOnly) {
@@ -179,7 +171,7 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 		Solution solution = (endState instanceof BackwardsGameState) 
 			? new BackwardSolution()
 			: new ForwardSolution();
-		while (state != null && !state.getMovesToHere().isEmpty()) {
+		while (state != null) {
 			solution.prepend(state.getMovesToHere());
 			state = cameFrom.get(state);
 		}
@@ -226,6 +218,8 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 	}
 	
 	public Solution getSolution() {
-		return solution;
+		BoxOnlyGameState rendezVouz = meetingPoint.get();
+		GameState linkingGameState = visited.get(rendezVouz);
+		return reconstructPath(cameFrom, linkingGameState);
 	}
 }

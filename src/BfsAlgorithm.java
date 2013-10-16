@@ -44,9 +44,7 @@ public class BfsAlgorithm implements PathFindingAlgorithm {
 		return null;
 	}
 
-	@Override
-	public Solution findPathToGoal(GameState startState, CyclicBarrier barrier) {
+	@Override public void findPathToGoal(GameState startState, CyclicBarrier barrier) {
 		// TODO Auto-generated method stub
-		return null;
 	}
 }
