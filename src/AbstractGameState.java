@@ -66,10 +66,11 @@ public abstract class AbstractGameState implements GameState {
 		Deque<Move> movesToEnd = findBackwardsMovePathsBFS(dummyList).get(dummy);
 		if(movesToEnd == null) // can't find path to "start" from here
 			return null;
-		if (this instanceof ForwardsGameState)
+		if (this instanceof ForwardsGameState) {
 			return new ForwardsGameState(board, new Player(l), boxes, movesToEnd);
-		else
+		} else {
 			return new BackwardsGameState(board, new Player(l), boxes, movesToEnd);
+		}
 	}
 	
 	@Override public int getDistanceToGoal() {

@@ -1,20 +1,26 @@
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 
-// TODO make this not specific for only BackwardsGameState
 public class Board {
 	private final char[][] board;
 	private final Set<Goal> goals;
 	private final char goalChar;
+	private Set<Location> deadlocks;
 	
 	public Board(char[][] board, Set<Goal> goals, char goalChar) {
 		this.board = board;
 		this.goals = goals;
 		this.goalChar = goalChar;
+		deadlocks = new HashSet<>();
 	}
 	
 	public Set<Goal> getGoals() {
 		return goals;
+	}
+	
+	public void setDeadlocks(Set<Location> deadlocks) {
+		this.deadlocks = deadlocks;
 	}
 	
 	public boolean isFree(Location l) {
@@ -29,6 +35,10 @@ public class Board {
 		
 		char c = board[row][col];
 		return c == GameState.FREE_SPACE || c == goalChar || c == GameState.PLAYER;
+	}
+	
+	public boolean isDeadlockLocation(Location l) {
+		return deadlocks.contains(l);
 	}
 	
 	public char getCharForLocation(Location loc) {

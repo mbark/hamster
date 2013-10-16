@@ -3,8 +3,8 @@ import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 public class ForwardsGameState extends AbstractGameState {
 	
@@ -12,7 +12,7 @@ public class ForwardsGameState extends AbstractGameState {
 	public static final char PLAYER_ON_GOAL = '+';
 	public static final char BOX = '$';
 	public static final char BOX_ON_GOAL = '*';
-
+	
 	ForwardsGameState (Board board, Player player, Set<Box> boxes) {
 		super(board, player, boxes);
 	}
@@ -64,7 +64,7 @@ public class ForwardsGameState extends AbstractGameState {
 			Set<Box> newBoxes = new HashSet<>(boxes);
 			newBoxes.remove(box);
 			newBoxes.add(movedBox);
-			moves.addLast (realMove); // TODO
+			moves.addLast (realMove);
 			GameState state = new ForwardsGameState(board, movedPlayer, newBoxes, moves);
 			nextStates.add (state);
 		}
@@ -78,13 +78,23 @@ public class ForwardsGameState extends AbstractGameState {
 		Location oneDown = m.getLocation().move(Move.DOWN);
 		Location oneLeft = m.getLocation().move(Move.LEFT);
 		if (isFreeForPlayer(oneUp, oneDown)) {
-			possibleMoves.add(Move.UP);
-			possibleMoves.add(Move.DOWN);
+			if(!board.isDeadlockLocation(oneDown)) {
+				possibleMoves.add(Move.UP);
+			}
+			if(!board.isDeadlockLocation(oneUp)) {
+				possibleMoves.add(Move.DOWN);
+			}
 		}
 		if (isFreeForPlayer(oneRight, oneLeft)) {
-			possibleMoves.add(Move.RIGHT);
-			possibleMoves.add(Move.LEFT);
+			if(!board.isDeadlockLocation(oneLeft)) {
+				possibleMoves.add(Move.RIGHT);
+			}
+			if(!board.isDeadlockLocation(oneRight)) {
+				possibleMoves.add(Move.LEFT);
+			}
 		}
+//		System.out.println(m + " " + possibleMoves);
+//		System.out.println(toString());
 		return possibleMoves;
 	}
 	
@@ -137,7 +147,55 @@ public class ForwardsGameState extends AbstractGameState {
 				}
 			}
 		}
-		return new ForwardsGameState(new Board(board, goals, GOAL), player, boxes);
+		Set<Location> deadlocks = findDeadlocks(board);
+		Board gameBoard = new Board(board, goals, GOAL);
+		gameBoard.setDeadlocks(deadlocks);
+		return new ForwardsGameState(gameBoard, player, boxes);
+	}
+	
+	private static Set<Location> findDeadlocks(char[][] board) {
+		Set<Location> deadlocks = new HashSet<>();
+		
+		for(int row = 0; row<board.length; row++) {
+			for(int col = 0; col<board[row].length; col++) {
+				if(board[row][col] == GOAL || board[row][col] == BOX_ON_GOAL) {
+					continue;
+				}
+				if(isDeadlock(board, row, col)) {
+					deadlocks.add(new Location(col, row));
+				}
+			}
+		}
+		
+		return deadlocks;
+	}
+	
+	private static boolean isDeadlock(char[][] board, int row, int col) {
+		if(board[row][col] == WALL) {
+			return false;
+		}
+		
+		boolean isBlockedUp = isBlocked(board, row-1, col);
+		boolean isBlockedDown = isBlocked(board, row+1, col);
+		boolean isBlockedLeft = isBlocked(board, row, col-1);
+		boolean isBlockedRight = isBlocked(board, row, col+1);
+		
+		if(isBlockedUp || isBlockedDown) {
+			return isBlockedLeft || isBlockedRight;
+		}
+		
+		return false;
+	}
+	
+	private static boolean isBlocked(char[][] board, int row, int col) {
+		if(row < 0 || row >= board.length) {
+			return false;
+		}
+		if(col < 0 || col >= board[row].length) {
+			return false;
+		}
+		
+		return board[row][col] == WALL;
 	}
 	
 	@Override public String toString() {

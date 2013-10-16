@@ -21,14 +21,14 @@ public class Main {
 	private static final PathFindingAlgorithm 	BFS = new BfsAlgorithm(),
 												A_STAR = new AStarAlgorithm(null, null, null, null);
 	
-	public static final void main2(String[] args) throws IOException {
+	public static final void main(String[] args) throws IOException {
 		List<String> boardStrings = read();
-		GameState gs = BackwardsGameState.calculateBoard(boardStrings);
+		GameState gs = ForwardsGameState.calculateBoard(boardStrings);
 		Solution solution = A_STAR.findPathToGoal(gs);
 		System.out.println(solution);
 	}
 	
-	public static final void main(String... args) throws IOException, InterruptedException {
+	public static final void main2(String... args) throws IOException, InterruptedException {
 		List<String> boardStrings = read();
 		CountDownLatch latch = new CountDownLatch(2);
 		ConcurrentMap<BoxOnlyGameState, GameState> forwardVisited = new ConcurrentHashMap<>();
