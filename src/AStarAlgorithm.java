@@ -147,8 +147,10 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 			if (linkingGameState != null) {
 				//If so, try to set meeting point
 				if (setMeetingPoint(boxOnly)) {
-					cameFrom.put(linkingGameState, current);
-					visited.put(new BoxOnlyGameState(linkingGameState), linkingGameState);
+					if (!linkingGameState.equals(current)) {
+						cameFrom.put(linkingGameState, current);
+						visited.put(new BoxOnlyGameState(linkingGameState), linkingGameState);
+					}
 					return true;
 				}
 			}
