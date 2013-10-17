@@ -226,12 +226,13 @@ public class ForwardsGameState extends AbstractGameState {
 		
 		for(int row = 0; row<board.length; row++) {
 			for(int col = 0; col<board[row].length; col++) {
+				if(board[row][col] == GOAL || board[row][col] == BOX_ON_GOAL) {
+					continue;
+				}
+				
 				Location current = new Location(col, row);
 				if(isEntrance(board, current)) {
 					entrances.add(current);
-				}
-				if(board[row][col] == GOAL || board[row][col] == BOX_ON_GOAL) {
-					continue;
 				}
 				if(isDeadlock(board, current)) {
 					deadlocks.add(current);
