@@ -331,9 +331,7 @@ public class ForwardsGameState extends AbstractGameState {
 			for(Location location : entrances) {
 				if(visited.contains(location)) {
 					continue;
-				}
-				
-				Location up = location.move(Move.UP);
+				}Location up = location.move(Move.UP);
 				Location down = location.move(Move.DOWN);
 				Location left = location.move(Move.LEFT);
 				Location right = location.move(Move.RIGHT);
@@ -394,5 +392,29 @@ public class ForwardsGameState extends AbstractGameState {
 			sb.append('\n');
 		}
 		return sb.toString();
+	}
+	
+	public class GoalArea {
+		private Location entrance;
+		private Set<Goal> goals;
+		private List<Deque<Move>> pathsToGoals;
+		private int freeGoalsLeft;
+		
+		public GoalArea(Location entrance, Set<Goal> goals) {
+			this.entrance = entrance;
+			this.goals = goals;
+			freeGoalsLeft = goals.size();
+			calculatePathsToGoal();
+		}
+		
+		private void calculatePathsToGoal() {
+			int foundPaths = 0;
+			//Do recursive
+			//set pathsToGoal
+		}
+		
+		public Location getEntrance() {
+			return entrance;
+		}
 	}
 }
