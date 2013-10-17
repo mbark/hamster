@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,7 @@ public class ForwardsGameState extends AbstractGameState {
 	public static final char PLAYER_ON_GOAL = '+';
 	public static final char BOX = '$';
 	public static final char BOX_ON_GOAL = '*';
+	private static final int MAX_GOAL_AREA_SIZE = 35;
 	
 	ForwardsGameState (Board board, Player player, Set<Box> boxes) {
 		super(board, player, boxes);
@@ -255,6 +257,7 @@ public class ForwardsGameState extends AbstractGameState {
 		}
 		
 		Map<Location, Location> tunnels = findTunnels(entrances);
+		findGoalAreas(gameBoard, entrances);
 		
 		gameBoard.setDeadlocks(deadlocks);
 		gameBoard.setTunnels(tunnels);
@@ -318,6 +321,98 @@ public class ForwardsGameState extends AbstractGameState {
 		return board[loc.getRow()][loc.getCol()];
 	}
 	
+	private static void findGoalAreas(Board board, Set<Location> entrances) {
+		List<GoalArea> goalAreas = new ArrayList<>();
+		for(Location entrance : entrances) {
+			GoalArea goalArea = findGoalArea(entrance, board);
+			if(goalArea == null) {
+				continue;
+			}
+			
+			boolean subsetOfOtherArea = false;
+			Iterator<GoalArea> iterator = goalAreas.iterator();
+			while(iterator.hasNext()) {
+				GoalArea otherArea = iterator.next();
+				if(otherArea.squaresInArea.contains(entrance)) {
+					subsetOfOtherArea = true;
+					break;
+				}
+				
+				if(goalArea.squaresInArea.contains(otherArea.entrance)) {
+					iterator.remove();
+				}
+			}
+			
+			if(!subsetOfOtherArea) {
+				goalAreas.add(goalArea);
+			}
+		}
+	}
+	
+	private static GoalArea findGoalArea(Location entrance, Board board) {
+		char[][] matrix = board.getBoardMatrix();
+		for(Move move : Move.values()) {
+			GoalArea goalArea = findGoalAreaBFS(entrance, move, matrix, board.getGoals());
+			if(goalArea != null) {
+				return goalArea;
+			}
+		}
+		
+		return null;
+	}
+	
+	private static GoalArea findGoalAreaBFS(Location entrance, Move direction, char[][] board, Set<Goal> goals) {
+		Queue<Location> queue = new LinkedList<>();
+		Set<Location> visited = new HashSet<>();
+		
+		Location start = entrance.move(direction);
+		visited.add(start);
+		for(Move move : Move.values()) {
+			if(move == direction.inverse()) {
+				continue;
+			}
+			
+			Location newLocation = start.move(move);
+			if(!isBlocked(board, newLocation)) {
+				queue.add(newLocation);
+				visited.add(newLocation);
+			}
+		}
+
+		Set<Goal> goalAreaGoals = new HashSet<>();
+		while (!queue.isEmpty()) {
+			Location location = queue.poll();
+			Goal goal = new Goal(location);
+			
+			if(goals.contains(goal)) {
+				goalAreaGoals.add(goal);
+			}
+			
+			for (Move move : Move.values()) {
+				Location newLocation = location.move(move);
+				if(newLocation.equals(entrance)) {
+					return null;
+				}
+				
+				if (visited.contains(newLocation) || getChar(board, newLocation) == WALL)
+					continue;
+				
+				visited.add(newLocation);
+				if(visited.size() > MAX_GOAL_AREA_SIZE) {
+					return null;
+				}
+				
+				queue.add(newLocation);
+			}
+		}
+		if(goalAreaGoals.size() <= 1) {
+			return null;
+		}
+		visited.add(entrance);
+		
+		return new GoalArea(entrance, goalAreaGoals, visited);
+	}
+	
 	private static final class TunnelFinder {
 		Set<Location> entrances;
 		Map<Location, Location> tunnels = new HashMap<>();
@@ -331,7 +426,8 @@ public class ForwardsGameState extends AbstractGameState {
 			for(Location location : entrances) {
 				if(visited.contains(location)) {
 					continue;
-				}Location up = location.move(Move.UP);
+				}
+				Location up = location.move(Move.UP);
 				Location down = location.move(Move.DOWN);
 				Location left = location.move(Move.LEFT);
 				Location right = location.move(Move.RIGHT);
@@ -394,15 +490,17 @@ public class ForwardsGameState extends AbstractGameState {
 		return sb.toString();
 	}
 	
-	public class GoalArea {
+	public static final class GoalArea {
+		private Set<Location> squaresInArea;
 		private Location entrance;
 		private Set<Goal> goals;
 		private List<Deque<Move>> pathsToGoals;
 		private int freeGoalsLeft;
 		
-		public GoalArea(Location entrance, Set<Goal> goals) {
+		public GoalArea(Location entrance, Set<Goal> goals, Set<Location> squaresInArea) {
 			this.entrance = entrance;
 			this.goals = goals;
+			this.squaresInArea = squaresInArea;
 			freeGoalsLeft = goals.size();
 			calculatePathsToGoal();
 		}

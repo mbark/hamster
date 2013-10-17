@@ -29,4 +29,8 @@ public class Goal {
 		Goal b = (Goal) obj;
 		return location.equals(b.location);
 	}
+	
+	@Override public String toString() {
+		return "Goal: " + location.toString();
+	}
 }
