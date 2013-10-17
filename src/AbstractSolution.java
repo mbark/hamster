@@ -12,4 +12,14 @@ public abstract class AbstractSolution implements Solution {
 	@Override public void append(Deque<Move> moves)  {
 		path.addLast(moves);
 	}
+	
+	@Override public Deque<Move> asDeque() {
+		Deque<Move> asDeque = new LinkedList<>();
+		for (Deque<Move> moveBatch : path) {
+			for (Move move : moveBatch) {
+				asDeque.addLast(move);
+			}
+		}
+		return asDeque;
+	}
 }

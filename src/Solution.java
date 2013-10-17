@@ -12,4 +12,5 @@ public interface Solution {
 	public void prepend (Deque<Move> moves);
 	public void append(Deque<Move> moves);
 	public Solution getForwardSolution();
+	public Deque<Move> asDeque();
 }
