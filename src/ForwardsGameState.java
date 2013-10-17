@@ -296,39 +296,61 @@ public class ForwardsGameState extends AbstractGameState {
 	}
 	
 	private static Map<Location, Location> findTunnels(Set<Location> entrances) {
-		Map<Location, Location> tunnels = new HashMap<>();
-		Set<Location> visited = new HashSet<>();
-		
-		for(Location location : entrances) {
-			if(visited.contains(location)) {
-				continue;
-			}
-			
-			Location down = location.move(Move.DOWN);
-			Location right = location.move(Move.RIGHT);
-			
-			if(entrances.contains(down)) {
-				while(entrances.contains(down.move(Move.DOWN))) {
-					visited.add(down);
-					down = down.move(Move.DOWN);
-				}
-				tunnels.put(location, down);
-				tunnels.put(down, location);
-			} else if(entrances.contains(right)) {
-				while(entrances.contains(right.move(Move.RIGHT))) {
-					visited.add(down);
-					right = right.move(Move.RIGHT);
-				}
-				tunnels.put(location, right);
-				tunnels.put(right, location);
-			}
-		}
-		
-		return tunnels;
+		TunnelFinder tf = new TunnelFinder(entrances);
+		return tf.findTunnels();
 	}
 	
 	private static char getChar(char[][] board, Location loc) {
 		return board[loc.getRow()][loc.getCol()];
+	}
+	
+	private static final class TunnelFinder {
+		Set<Location> entrances;
+		Map<Location, Location> tunnels = new HashMap<>();
+		Set<Location> visited = new HashSet<>();
+		
+		private TunnelFinder(Set<Location> entrances) {
+			this.entrances = entrances;
+		}
+		
+		private Map<Location, Location> findTunnels() {
+			for(Location location : entrances) {
+				if(visited.contains(location)) {
+					continue;
+				}
+				
+				Location up = location.move(Move.UP);
+				Location down = location.move(Move.DOWN);
+				Location left = location.move(Move.LEFT);
+				Location right = location.move(Move.RIGHT);
+				
+				if(entrances.contains(up) || entrances.contains(down)) {
+					addTunnel(location, Move.UP);
+				} else if(entrances.contains(right) || entrances.contains(left)) {
+					addTunnel(location, Move.RIGHT);
+				}
+			}
+			
+			return tunnels;
+		}
+		
+		void addTunnel(Location current, Move move) {
+			Move inverseMove = move.inverse();
+			
+			Location start = moveTillEnd(current, move);
+			Location end = moveTillEnd(current, inverseMove);
+			
+			tunnels.put(start, end);
+			tunnels.put(end, start);
+		}
+		
+		Location moveTillEnd(Location start, Move direction) {
+			while(entrances.contains(start.move(direction))) {
+				visited.add(start);
+				start = start.move(direction);
+			}
+			return start;
+		}
 	}
 	
 	@Override public String toString() {
