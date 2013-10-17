@@ -17,6 +17,8 @@ public abstract class AbstractGameState implements GameState {
 	
 	protected final Player player;
 	protected final Set<Box> boxes;
+	
+	private Location topLeftmostCorner = null;
 
 	AbstractGameState (Board board, Player player, Set<Box> boxes) {
 		this (board, player, boxes, new LinkedList<Move>());
@@ -28,6 +30,8 @@ public abstract class AbstractGameState implements GameState {
 		this.boxes = boxes;
 		this.movesToHere = new LinkedList<>();
 		movesToHere.addFirst(lastMove);
+		if (player != null)
+			topLeftmostCorner = findTopLeftmostCorner ();
 	}
 
 	AbstractGameState(Board board, Player player, Set<Box> boxes, Deque<Move> movesToHere) {
@@ -35,6 +39,8 @@ public abstract class AbstractGameState implements GameState {
 		this.player = player;
 		this.boxes = boxes;
 		this.movesToHere = movesToHere;
+		if (player != null)
+			topLeftmostCorner = findTopLeftmostCorner ();
 	}
 
 	/**
@@ -104,6 +110,15 @@ public abstract class AbstractGameState implements GameState {
 		return true;
 	}
 	
+	protected boolean boxesAreDone () {
+		for(Box box : boxes) {
+			Location loc = box.getLocation();
+			if (!board.isGoal(loc))
+				return false;
+		}
+		return true;
+	}
+	
 	protected Map<BoxMove, Deque<Move>> findBackwardsMovePathsBFS (List<BoxMove> possibleBoxMoves) {
 		Set<Location> possibleLocations = new HashSet<>();
 		for (BoxMove boxMove : possibleBoxMoves)
@@ -150,11 +165,39 @@ public abstract class AbstractGameState implements GameState {
 		}
 		return pathsToPossibleBoxMoves;
 	}
+
+	private Location findTopLeftmostCorner () {
+		if (isDone ()) // special case to ensure run-to-goal state is not overwritten
+			return new Location(-1, -1);
+		Set<Location> visited = new HashSet<>();
+		Queue<Location> queue = new LinkedList<>();
+		queue.add (getPlayerLocation());
+		visited.add (getPlayerLocation());
+		Location topLeft = getPlayerLocation();
+		while (!queue.isEmpty()) {
+			Location current = queue.poll();
+			// set topLeftmostCorner, rows having priority over columns
+			if (current.getRow() < topLeft.getRow())
+				topLeft = current;
+			else if (current.getRow() == topLeft.getRow() &&
+					 current.getCol() < topLeft.getCol())
+				topLeft = current;
+			
+			for (Move move : Move.values()) {
+				Location neighbor = current.move(move);
+				if (isFreeForPlayer(neighbor) && !visited.contains(neighbor)) {
+					queue.add(neighbor);
+					visited.add(neighbor);
+				}
+			}
+		}
+		return topLeft;
+	}
 	
 	@Override public int hashCode() {
 		int hashCode = 0;
-		if(player != null) {
-			hashCode += player.hashCode();
+		if(topLeftmostCorner != null) {
+			hashCode += topLeftmostCorner.hashCode();
 		}
 		return hashCode + 31*boxes.hashCode();
 	}
@@ -165,12 +208,12 @@ public abstract class AbstractGameState implements GameState {
 		if (!(obj instanceof AbstractGameState))
 			return false;
 		AbstractGameState g = (AbstractGameState) obj;
-		if(player == null) {
-			if(g.player != null) {
+		if(topLeftmostCorner == null) {
+			if(g.topLeftmostCorner != null) {
 				return false;
 			}
 		}
-		return player.equals(g.player) &&
+		return topLeftmostCorner.equals(g.topLeftmostCorner) &&
 				boxes.equals(g.boxes);
 	}
 }
