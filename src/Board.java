@@ -9,7 +9,7 @@ public class Board {
 	private final Set<Goal> goals;
 	private final char goalChar;
 	private Set<Location> deadlocks;
-	private Map<Location, Location> tunnels;
+	private Map<TunnelStart, Location> tunnels;
 	
 	public Board(char[][] board, Set<Goal> goals, char goalChar) {
 		this.board = board;
@@ -23,20 +23,13 @@ public class Board {
 		return goals;
 	}
 	
-	public Map<Location, Location> getTunnels() {
-		return tunnels;
-	}
-	
 	public void setDeadlocks(Set<Location> deadlocks) {
 		this.deadlocks = deadlocks;
 	}
 	
-	public void setTunnels(Map<Location, Location> tunnels) {
-		this.tunnels = tunnels;
-	}
-	
-	private void addTunnel(Location start, Location end, Move direction) {
-		
+	public void addTunnel(Location start, Location end, Move direction) {
+		TunnelStart tunnelStart = new TunnelStart(start, direction);
+		tunnels.put(tunnelStart, end);
 	}
 	
 	public boolean isFree(Location l) {
@@ -57,12 +50,12 @@ public class Board {
 		return deadlocks.contains(l);
 	}
 	
-	public boolean isStartOfTunnel(Location l) {
-		return tunnels.containsKey(l);
+	public boolean isStartOfTunnel(Location l, Move direction) {
+		return tunnels.containsKey(new TunnelStart(l, direction));
 	}
 	
-	public Location getEndOfTunnel(Location l) {
-		return tunnels.get(l);
+	public Location getEndOfTunnel(Location l, Move direction) {
+		return tunnels.get(new TunnelStart(l, direction));
 	}
 	
 	public char getCharForLocation(Location loc) {
@@ -71,6 +64,45 @@ public class Board {
 	
 	public boolean isGoal (Location l) {
 		return getCharForLocation(l) == goalChar;
+	}
+	
+	private final class TunnelStart {
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result
+					+ ((direction == null) ? 0 : direction.hashCode());
+			result = prime * result + ((start == null) ? 0 : start.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			TunnelStart other = (TunnelStart) obj;
+			if (direction != other.direction)
+				return false;
+			if (start == null) {
+				if (other.start != null)
+					return false;
+			} else if (!start.equals(other.start))
+				return false;
+			return true;
+		}
+
+		Location start;
+		Move direction;
+		
+		TunnelStart(Location start, Move direction) {
+			this.start = start;
+			this.direction = direction;
+		}
 	}
 	
 	

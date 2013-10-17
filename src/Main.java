@@ -22,13 +22,10 @@ public class Main {
 												A_STAR = new AStarAlgorithm(null, null, null, null);
 	
 	public static final void main(String[] args) throws IOException {
-		long t0 = System.currentTimeMillis();
 		List<String> boardStrings = read();
-		GameState gs = ForwardsGameState.calculateBoard(boardStrings);
+		GameState gs = BackwardsGameState.calculateBoard(boardStrings);
 		Solution solution = A_STAR.findPathToGoal(gs);
 		System.out.println(solution);
-		long t1 = System.currentTimeMillis();
-		System.out.println(t1 - t0);
 	}
 	
 	public static final void main2(String... args) throws IOException, InterruptedException {

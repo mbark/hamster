@@ -62,24 +62,21 @@ public class ForwardsGameState extends AbstractGameState {
 			Set<Box> newBoxes = new HashSet<>(boxes);
 			newBoxes.remove(box);
 			moves.addLast (realMove);
-			/*
-			 * this is the tunnel pushing code. when board.isStartOfTunnel
-			 * takes the direction of the push into account, uncomment this
-
-			if (board.isStartOfTunnel(movedBox.getLocation())) {
+			if (board.isStartOfTunnel(movedBox.getLocation(), realMove)) {
 				Location start = movedBox.getLocation();
-				List<Move> tunnelPath = start.getLinearPathTo(board.getEndOfTunnel(start));
+				List<Move> tunnelPath = start.getLinearPathTo(board.getEndOfTunnel(start, realMove));
 				for (Move tunnelMove : tunnelPath) {
 					movedPlayer = movedPlayer.move(tunnelMove);
 					movedBox = movedBox.move(tunnelMove);
 					moves.addLast (tunnelMove);
 				}
 			}
-			*/
 			newBoxes.add(movedBox);
 			ForwardsGameState state = new ForwardsGameState(board, movedPlayer, newBoxes, moves);
-			if (!isDeadlockState(state, movedBox))
+			if (!isDeadlockState(state, movedBox)) {
 				nextStates.add (state);
+			}
+			
 		}
 		return nextStates;
 	}
@@ -249,11 +246,12 @@ public class ForwardsGameState extends AbstractGameState {
 			}
 		}
 		
-		Map<Location, Location> tunnels = findTunnels(entrances);
-		gameBoard.setDeadlocks(deadlocks);
-		gameBoard.setTunnels(tunnels);
+		List<GoalArea> goalAreas = findGoalAreas(gameBoard, entrances);
 		
-		findGoalAreas(gameBoard, entrances);
+		findTunnels(entrances, gameBoard, goalAreas);
+		
+		gameBoard.setDeadlocks(deadlocks);
+		
 		
 		return deadlocks;
 	}
@@ -305,16 +303,16 @@ public class ForwardsGameState extends AbstractGameState {
 		return rowDirectionEntrace != colDirectionEntrace;
 	}
 	
-	private static Map<Location, Location> findTunnels(Set<Location> entrances) {
-		TunnelFinder tf = new TunnelFinder(entrances);
-		return tf.findTunnels();
+	private static void findTunnels(Set<Location> entrances, Board board, List<GoalArea> goalAreas) {
+		TunnelFinder tf = new TunnelFinder(entrances, goalAreas);
+		tf.addTunnels(board);
 	}
 	
 	private static char getChar(char[][] board, Location loc) {
 		return board[loc.getRow()][loc.getCol()];
 	}
 	
-	private static void findGoalAreas(Board board, Set<Location> entrances) {
+	private static List<GoalArea> findGoalAreas(Board board, Set<Location> entrances) {
 		List<GoalArea> goalAreas = new ArrayList<>();
 		for(Location entrance : entrances) {
 			GoalArea goalArea = findGoalArea(entrance, board);
@@ -339,18 +337,10 @@ public class ForwardsGameState extends AbstractGameState {
 			if(subsetOfOtherArea) {
 				continue;
 			}
-			
-			Iterator<Entry<Location, Location>> tunnelIterator = board.getTunnels().entrySet().iterator();
-			Set<Location> squares = goalArea.squaresInArea;
-			while(tunnelIterator.hasNext()) {
-				Entry<Location, Location> tunnel = tunnelIterator.next();
-				if(squares.contains(tunnel.getKey()) || squares.contains(tunnel.getValue())) {
-					tunnelIterator.remove();
-				}
-			}
-			
 			goalAreas.add(goalArea);
 		}
+		
+		return goalAreas;
 	}
 	
 	private static GoalArea findGoalArea(Location entrance, Board board) {
@@ -419,47 +409,61 @@ public class ForwardsGameState extends AbstractGameState {
 	
 	private static final class TunnelFinder {
 		Set<Location> entrances;
-		Map<Location, Location> tunnels = new HashMap<>();
 		Set<Location> visited = new HashSet<>();
+		List<GoalArea> goalAreas;
 		
-		private TunnelFinder(Set<Location> entrances) {
+		private TunnelFinder(Set<Location> entrances, List<GoalArea> goalAreas) {
 			this.entrances = entrances;
+			this.goalAreas = goalAreas;
 		}
 		
-		private Map<Location, Location> findTunnels() {
+		private Board addTunnels(Board board) {
 			for(Location location : entrances) {
 				if(visited.contains(location)) {
 					continue;
 				}
+				
+				boolean inGoalArea = false;
+				for(GoalArea goalArea : goalAreas) {
+					if(goalArea.squaresInArea.contains(location)) {
+						inGoalArea = true;
+						break;
+					}
+				}
+				if(inGoalArea) {
+					continue;
+				}
+				
 				Location up = location.move(Move.UP);
 				Location down = location.move(Move.DOWN);
 				Location left = location.move(Move.LEFT);
 				Location right = location.move(Move.RIGHT);
 				
 				if(entrances.contains(up) || entrances.contains(down)) {
-					addTunnel(location, Move.UP);
+					addTunnel(location, Move.UP, board);
 				} else if(entrances.contains(right) || entrances.contains(left)) {
-					addTunnel(location, Move.RIGHT);
+					addTunnel(location, Move.RIGHT, board);
 				}
 			}
 			
-			return tunnels;
+			return board;
 		}
 		
-		void addTunnel(Location current, Move move) {
+		void addTunnel(Location current, Move move, Board board) {
 			Move inverseMove = move.inverse();
 			
 			Location start = moveTillEnd(current, move);
 			Location end = moveTillEnd(current, inverseMove);
 			
-			tunnels.put(start, end);
-			tunnels.put(end, start);
+			board.addTunnel(start, end, move.inverse());
+			board.addTunnel(end, start, inverseMove.inverse());
 		}
 		
 		Location moveTillEnd(Location start, Move direction) {
+			visited.add(start);
 			while(entrances.contains(start.move(direction))) {
-				visited.add(start);
 				start = start.move(direction);
+				visited.add(start);
 			}
 			return start;
 		}
