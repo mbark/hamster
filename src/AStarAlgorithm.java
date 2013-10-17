@@ -211,7 +211,7 @@ public class AStarAlgorithm implements PathFindingAlgorithm {
 				}
 				int score = myScore - otherScore;
 				if(score == 0) {
-					score = Math.random() > 0.5 ? 1 : -1;
+					score = 1;
 				}
 				
 				return score;
