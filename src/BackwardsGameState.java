@@ -242,18 +242,6 @@ public class BackwardsGameState extends AbstractGameState {
 		return boxesAreDone();
 	}
 	
-	private boolean boxesAreDone () {
-		for(Box box : boxes) {
-			Location loc = box.getLocation();
-			char c = board.getCharForLocation(loc);
-			
-			if(c != GOAL) {
-				return false;
-			}
-		}
-		return true;
-	}
-	
 	/**
 	 * Create a {@link BackwardsGameState} object as a sub-level of this GameState given
 	 * a rectangular shape.

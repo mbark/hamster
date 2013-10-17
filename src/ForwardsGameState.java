@@ -29,15 +29,7 @@ public class ForwardsGameState extends AbstractGameState {
 	}
 
 	@Override public boolean isDone() {
-		for(Box box : boxes) {
-			Location loc = box.getLocation();
-			char c = board.getCharForLocation(loc);
-			
-			if(c != GOAL) {
-				return false;
-			}
-		}
-		return true;
+		return boxesAreDone();
 	}
 
 	@Override public List<GameState> getNextBoxStates() {

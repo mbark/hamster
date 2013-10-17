@@ -110,6 +110,15 @@ public abstract class AbstractGameState implements GameState {
 		return true;
 	}
 	
+	protected boolean boxesAreDone () {
+		for(Box box : boxes) {
+			Location loc = box.getLocation();
+			if (!board.isGoal(loc))
+				return false;
+		}
+		return true;
+	}
+	
 	protected Map<BoxMove, Deque<Move>> findBackwardsMovePathsBFS (List<BoxMove> possibleBoxMoves) {
 		Set<Location> possibleLocations = new HashSet<>();
 		for (BoxMove boxMove : possibleBoxMoves)
@@ -158,6 +167,8 @@ public abstract class AbstractGameState implements GameState {
 	}
 
 	private Location findTopLeftmostCorner () {
+		if (isDone ()) // special case to ensure run-to-goal state is not overwritten
+			return new Location(-1, -1);
 		Set<Location> visited = new HashSet<>();
 		Queue<Location> queue = new LinkedList<>();
 		queue.add (getPlayerLocation());
