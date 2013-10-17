@@ -17,7 +17,7 @@ public class ForwardsGameState extends AbstractGameState {
 	public static final char PLAYER_ON_GOAL = '+';
 	public static final char BOX = '$';
 	public static final char BOX_ON_GOAL = '*';
-	private static final int MAX_GOAL_AREA_SIZE = 30;
+	private static final int MAX_GOAL_AREA_SIZE = 35;
 	
 	ForwardsGameState (Board board, Player player, Set<Box> boxes) {
 		super(board, player, boxes);
@@ -65,10 +65,23 @@ public class ForwardsGameState extends AbstractGameState {
 			if (board.isStartOfTunnel(movedBox.getLocation(), realMove)) {
 				Location start = movedBox.getLocation();
 				List<Move> tunnelPath = start.getLinearPathTo(board.getEndOfTunnel(start, realMove));
-				for (Move tunnelMove : tunnelPath) {
-					movedPlayer = movedPlayer.move(tunnelMove);
-					movedBox = movedBox.move(tunnelMove);
-					moves.addLast (tunnelMove);
+				
+				boolean boxInTunnel = false;
+				Location positionInTunnel = start;
+				for(Move tunnelMove : tunnelPath) {
+					positionInTunnel = positionInTunnel.move(tunnelMove);
+					if(boxes.contains(positionInTunnel)) {
+						boxInTunnel = true;
+						break;
+					}
+				}
+				
+				if(!boxInTunnel) {
+					for (Move tunnelMove : tunnelPath) {
+						movedPlayer = movedPlayer.move(tunnelMove);
+						movedBox = movedBox.move(tunnelMove);
+						moves.addLast (tunnelMove);
+					}
 				}
 			}
 			newBoxes.add(movedBox);
