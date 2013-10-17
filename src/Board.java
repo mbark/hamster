@@ -28,7 +28,6 @@ public class Board {
 	}
 	
 	public void setTunnels(Map<Location, Location> tunnels) {
-		System.out.println(tunnels);
 		this.tunnels = tunnels;
 	}
 	

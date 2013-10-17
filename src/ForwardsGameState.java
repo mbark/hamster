@@ -66,8 +66,22 @@ public class ForwardsGameState extends AbstractGameState {
 			
 			Set<Box> newBoxes = new HashSet<>(boxes);
 			newBoxes.remove(box);
-			newBoxes.add(movedBox);
 			moves.addLast (realMove);
+			/*
+			 * this is the tunnel pushing code. when board.isStartOfTunnel
+			 * takes the direction of the push into account, uncomment this
+
+			if (board.isStartOfTunnel(movedBox.getLocation())) {
+				Location start = movedBox.getLocation();
+				List<Move> tunnelPath = start.getLinearPathTo(board.getEndOfTunnel(start));
+				for (Move tunnelMove : tunnelPath) {
+					movedPlayer = movedPlayer.move(tunnelMove);
+					movedBox = movedBox.move(tunnelMove);
+					moves.addLast (tunnelMove);
+				}
+			}
+			*/
+			newBoxes.add(movedBox);
 			ForwardsGameState state = new ForwardsGameState(board, movedPlayer, newBoxes, moves);
 			if (!isDeadlockState(state, movedBox))
 				nextStates.add (state);
