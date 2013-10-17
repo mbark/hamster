@@ -351,11 +351,6 @@ public class ForwardsGameState extends AbstractGameState {
 			
 			goalAreas.add(goalArea);
 		}
-		
-		for(GoalArea goalArea : goalAreas) {
-			System.out.println("Goal area at " + goalArea.entrance);
-		}
-		System.out.println(board.getTunnels());
 	}
 	
 	private static GoalArea findGoalArea(Location entrance, Board board) {

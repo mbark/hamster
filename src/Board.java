@@ -35,6 +35,10 @@ public class Board {
 		this.tunnels = tunnels;
 	}
 	
+	private void addTunnel(Location start, Location end, Move direction) {
+		
+	}
+	
 	public boolean isFree(Location l) {
 		int col = l.getCol();
 		int row = l.getRow();
