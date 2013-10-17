@@ -165,6 +165,11 @@ public abstract class AbstractGameState implements GameState {
 		if (!(obj instanceof AbstractGameState))
 			return false;
 		AbstractGameState g = (AbstractGameState) obj;
+		if(player == null) {
+			if(g.player != null) {
+				return false;
+			}
+		}
 		return player.equals(g.player) &&
 				boxes.equals(g.boxes);
 	}

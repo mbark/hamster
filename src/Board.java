@@ -1,5 +1,7 @@
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 public class Board {
@@ -7,12 +9,14 @@ public class Board {
 	private final Set<Goal> goals;
 	private final char goalChar;
 	private Set<Location> deadlocks;
+	private Map<Location, Location> tunnels;
 	
 	public Board(char[][] board, Set<Goal> goals, char goalChar) {
 		this.board = board;
 		this.goals = goals;
 		this.goalChar = goalChar;
 		deadlocks = new HashSet<>();
+		tunnels = new HashMap<>();
 	}
 	
 	public Set<Goal> getGoals() {
@@ -21,6 +25,10 @@ public class Board {
 	
 	public void setDeadlocks(Set<Location> deadlocks) {
 		this.deadlocks = deadlocks;
+	}
+	
+	public void setTunnels(Map<Location, Location> tunnels) {
+		this.tunnels = tunnels;
 	}
 	
 	public boolean isFree(Location l) {
@@ -39,6 +47,14 @@ public class Board {
 	
 	public boolean isDeadlockLocation(Location l) {
 		return deadlocks.contains(l);
+	}
+	
+	public boolean isStartOfTunnel(Location l) {
+		return tunnels.containsKey(l);
+	}
+	
+	public Location getEndOfTunnel(Location l) {
+		return tunnels.get(l);
 	}
 	
 	public char getCharForLocation(Location loc) {

@@ -1,9 +1,12 @@
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Queue;
 import java.util.Set;
 
 public class ForwardsGameState extends AbstractGameState {
@@ -89,6 +92,7 @@ public class ForwardsGameState extends AbstractGameState {
 		for (Box adjacentBox : adjacentBoxes)
 			if (!isDeadlockStateRecursive(state, adjacentBox, visitedBoxes))
 				return false;
+		
 		return true;
 	}
 	
@@ -176,38 +180,82 @@ public class ForwardsGameState extends AbstractGameState {
 				}
 			}
 		}
-		Set<Location> deadlocks = findDeadlocks(board);
+		
+		board = fillUnreachableLocationsWithWalls(board, player);
+		
 		Board gameBoard = new Board(board, goals, GOAL);
-		gameBoard.setDeadlocks(deadlocks);
+		preprocess(gameBoard);
 		return new ForwardsGameState(gameBoard, player, boxes);
 	}
 	
-	private static Set<Location> findDeadlocks(char[][] board) {
-		Set<Location> deadlocks = new HashSet<>();
+	private static char[][] fillUnreachableLocationsWithWalls(char[][] board, Player player) {
+		Queue<Location> queue = new LinkedList<>();
+		queue.add(player.getLocation());
+		Set<Location> visited = new HashSet<>();
+		visited.add(player.getLocation());
+		
+		while (!queue.isEmpty()) {
+			Location location = queue.poll();
+			
+			for (Move move : Move.values()) {
+				Location newLocation = location.move(move);
+				if (visited.contains(newLocation) || getChar(board, newLocation) == WALL)
+					continue;
+				visited.add(newLocation);
+				queue.add(newLocation);
+			}
+		}
 		
 		for(int row = 0; row<board.length; row++) {
 			for(int col = 0; col<board[row].length; col++) {
-				if(board[row][col] == GOAL || board[row][col] == BOX_ON_GOAL) {
-					continue;
-				}
-				if(isDeadlock(board, row, col)) {
-					deadlocks.add(new Location(col, row));
+				Location l = new Location(col, row);
+				if(!visited.contains(l)) {
+					board[row][col] = WALL;
 				}
 			}
 		}
 		
+		return board;
+	}
+	
+	private static Set<Location> preprocess(Board gameBoard) {
+		Set<Location> deadlocks = new HashSet<>();
+		Set<Location> entrances = new HashSet<>();
+		
+		char[][] board = gameBoard.getBoardMatrix();
+		
+		for(int row = 0; row<board.length; row++) {
+			for(int col = 0; col<board[row].length; col++) {
+				Location current = new Location(col, row);
+				if(isEntrance(board, current)) {
+					entrances.add(current);
+				}
+				if(board[row][col] == GOAL || board[row][col] == BOX_ON_GOAL) {
+					continue;
+				}
+				if(isDeadlock(board, current)) {
+					deadlocks.add(current);
+				}
+			}
+		}
+		
+		Map<Location, Location> tunnels = findTunnels(entrances);
+		
+		gameBoard.setDeadlocks(deadlocks);
+		gameBoard.setTunnels(tunnels);
+		
 		return deadlocks;
 	}
 	
-	private static boolean isDeadlock(char[][] board, int row, int col) {
-		if(board[row][col] == WALL) {
+	private static boolean isDeadlock(char[][] board, Location current) {
+		if(board[current.getRow()][current.getCol()] == WALL) {
 			return false;
 		}
 		
-		boolean isBlockedUp = isBlocked(board, row-1, col);
-		boolean isBlockedDown = isBlocked(board, row+1, col);
-		boolean isBlockedLeft = isBlocked(board, row, col-1);
-		boolean isBlockedRight = isBlocked(board, row, col+1);
+		boolean isBlockedUp = isBlocked(board, current.move(Move.UP));
+		boolean isBlockedDown = isBlocked(board, current.move(Move.DOWN));
+		boolean isBlockedLeft = isBlocked(board, current.move(Move.LEFT));
+		boolean isBlockedRight = isBlocked(board, current.move(Move.RIGHT));
 		
 		if(isBlockedUp || isBlockedDown) {
 			return isBlockedLeft || isBlockedRight;
@@ -216,15 +264,70 @@ public class ForwardsGameState extends AbstractGameState {
 		return false;
 	}
 	
-	private static boolean isBlocked(char[][] board, int row, int col) {
+	private static boolean isBlocked(char[][] board, Location loc) {
+		int row = loc.getRow();
+		int col = loc.getCol();
+		
 		if(row < 0 || row >= board.length) {
-			return false;
+			return true;
 		}
 		if(col < 0 || col >= board[row].length) {
-			return false;
+			return true;
 		}
 		
 		return board[row][col] == WALL;
+	}
+	
+	private static boolean isEntrance(char[][] board, Location loc) {
+		if(getChar(board, loc) == WALL) {
+			return false;
+		}
+		
+		boolean upBlocked = isBlocked(board, loc.move(Move.UP));
+		boolean downBlocked = isBlocked(board, loc.move(Move.DOWN));
+		boolean leftBlocked = isBlocked(board, loc.move(Move.LEFT));
+		boolean rightBlocked = isBlocked(board, loc.move(Move.RIGHT));
+		
+		boolean rowDirectionEntrace = upBlocked && downBlocked;
+		boolean colDirectionEntrace = leftBlocked && rightBlocked;
+		
+		return rowDirectionEntrace != colDirectionEntrace;
+	}
+	
+	private static Map<Location, Location> findTunnels(Set<Location> entrances) {
+		Map<Location, Location> tunnels = new HashMap<>();
+		Set<Location> visited = new HashSet<>();
+		
+		for(Location location : entrances) {
+			if(visited.contains(location)) {
+				continue;
+			}
+			
+			Location down = location.move(Move.DOWN);
+			Location right = location.move(Move.RIGHT);
+			
+			if(entrances.contains(down)) {
+				while(entrances.contains(down.move(Move.DOWN))) {
+					visited.add(down);
+					down = down.move(Move.DOWN);
+				}
+				tunnels.put(location, down);
+				tunnels.put(down, location);
+			} else if(entrances.contains(right)) {
+				while(entrances.contains(right.move(Move.RIGHT))) {
+					visited.add(down);
+					right = right.move(Move.RIGHT);
+				}
+				tunnels.put(location, right);
+				tunnels.put(right, location);
+			}
+		}
+		
+		return tunnels;
+	}
+	
+	private static char getChar(char[][] board, Location loc) {
+		return board[loc.getRow()][loc.getCol()];
 	}
 	
 	@Override public String toString() {
