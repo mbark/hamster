@@ -23,6 +23,10 @@ public class Board {
 		return goals;
 	}
 	
+	public Map<Location, Location> getTunnels() {
+		return tunnels;
+	}
+	
 	public void setDeadlocks(Set<Location> deadlocks) {
 		this.deadlocks = deadlocks;
 	}

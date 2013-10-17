@@ -16,7 +16,7 @@ public class ForwardsGameState extends AbstractGameState {
 	public static final char PLAYER_ON_GOAL = '+';
 	public static final char BOX = '$';
 	public static final char BOX_ON_GOAL = '*';
-	private static final int MAX_GOAL_AREA_SIZE = 35;
+	private static final int MAX_GOAL_AREA_SIZE = 30;
 	
 	ForwardsGameState (Board board, Player player, Set<Box> boxes) {
 		super(board, player, boxes);
@@ -249,10 +249,10 @@ public class ForwardsGameState extends AbstractGameState {
 		}
 		
 		Map<Location, Location> tunnels = findTunnels(entrances);
-		findGoalAreas(gameBoard, entrances);
-		
 		gameBoard.setDeadlocks(deadlocks);
 		gameBoard.setTunnels(tunnels);
+		
+		findGoalAreas(gameBoard, entrances);
 		
 		return deadlocks;
 	}
@@ -335,10 +335,26 @@ public class ForwardsGameState extends AbstractGameState {
 				}
 			}
 			
-			if(!subsetOfOtherArea) {
-				goalAreas.add(goalArea);
+			if(subsetOfOtherArea) {
+				continue;
 			}
+			
+			Iterator<Entry<Location, Location>> tunnelIterator = board.getTunnels().entrySet().iterator();
+			Set<Location> squares = goalArea.squaresInArea;
+			while(tunnelIterator.hasNext()) {
+				Entry<Location, Location> tunnel = tunnelIterator.next();
+				if(squares.contains(tunnel.getKey()) || squares.contains(tunnel.getValue())) {
+					tunnelIterator.remove();
+				}
+			}
+			
+			goalAreas.add(goalArea);
 		}
+		
+		for(GoalArea goalArea : goalAreas) {
+			System.out.println("Goal area at " + goalArea.entrance);
+		}
+		System.out.println(board.getTunnels());
 	}
 	
 	private static GoalArea findGoalArea(Location entrance, Board board) {
