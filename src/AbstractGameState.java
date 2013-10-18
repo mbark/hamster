@@ -57,7 +57,7 @@ public abstract class AbstractGameState implements GameState {
 	}
 	
 	@Override public Location getPlayerLocation() {
-		return player.getLocation();
+		return player == null ? null : player.getLocation();
 	}
 	
 	@Override public GameState getPlayerMoveGameState(Location l) {

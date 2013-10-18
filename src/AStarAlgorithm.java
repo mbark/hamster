@@ -1,4 +1,5 @@
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -18,6 +19,7 @@ public class AStarAlgorithm {
 	final Set<GameState> visitedNodes = new HashSet<>();
 	final Set<GameState> closedSet = new HashSet<>();
 	final TreeSet<GameState> openSet = new TreeSet<>(getComparator());
+	private final GameState start;
 	
 	private boolean isDone = false;
 	GameState rendevouz = null;
@@ -25,9 +27,11 @@ public class AStarAlgorithm {
 	
 
 	public AStarAlgorithm(GameState start) {
+		this.start = start;
 		gScore.put(start, 0);
 		fScore.put(start, estimatedTotalCost(start, gScore));
 		openSet.add(start);
+		cameFrom.put(start, null);
 	}
 	
 	public void setOtherAStar(AStarAlgorithm aStar) {
@@ -91,12 +95,8 @@ public class AStarAlgorithm {
 		
 		return false;
 	}
-
-	public boolean isDone() {
-		return isDone;
-	}
 	
-	public boolean hasReachedRendevouz(GameState current) {
+	private boolean hasReachedRendevouz(GameState current) {
 		if(otherAStar == null) {
 			return false;
 		} else {
@@ -104,21 +104,31 @@ public class AStarAlgorithm {
 		}
 	}
 	
-	public void setRendevouzForOther(GameState rendevouz) {
+	private void setRendevouzForOther(GameState rendevouz) {
 		if(otherAStar != null) {
-//			TODO: this must be done properly
-			otherAStar.rendevouz = rendevouz;
-//			otherAStar.rendevouz = otherAStar.cameFrom.get(rendevouz);
+			GameState otherRendevouz = otherAStar.findCorrespondingKey(rendevouz);
+			if (otherRendevouz.getPlayerLocation() != null) {
+				Deque<Move> movesToLink =
+						rendevouz.getPlayerMoveGameState(otherRendevouz.getPlayerLocation()).getMovesToHere();
+				rendevouz.getMovesToHere().addAll(movesToLink);
+			}
+			otherAStar.rendevouz = otherRendevouz;
 			otherAStar.isDone = true;
 		}
 	}
 	
-	public boolean contains(GameState state) {
+	private boolean contains(GameState state) {
 		return cameFrom.containsKey(state);
 	}
 	
-	public GameState get(BoxOnlyGameState state) {
-		return cameFrom.get(state);
+	private GameState findCorrespondingKey (GameState key) {
+		for (Map.Entry<GameState, GameState> e : cameFrom.entrySet())
+			if (e.getKey().equals(key))
+				return e.getKey();
+		for (Map.Entry<GameState, GameState> e : cameFrom.entrySet())
+			if (e.getKey().getBoxes().equals(key.getBoxes()))
+				return e.getKey();
+		return null;
 	}
 	
 	public Solution getSolution() {
@@ -126,10 +136,10 @@ public class AStarAlgorithm {
 	}
 	
 	private Solution reconstructPath(Map<GameState, GameState> cameFrom, GameState endState) {
-		GameState state = endState;
-		Solution solution = (endState instanceof BackwardsGameState) 
+		Solution solution = (start instanceof BackwardsGameState) 
 			? new BackwardSolution()
 			: new ForwardSolution();
+		GameState state = endState;
 		while (state != null) {
 			solution.prepend(state.getMovesToHere());
 			state = cameFrom.get(state);
