@@ -337,4 +337,10 @@ public class BackwardsGameState extends AbstractGameState {
 		}
 		return sb.toString();
 	}
+
+	@Override public List<GameState> tryGoalMacro() {
+		return null;//No goal areas in backwards
+	}
+	
+	
 }

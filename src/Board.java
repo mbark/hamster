@@ -1,6 +1,8 @@
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -10,6 +12,7 @@ public class Board {
 	private final char goalChar;
 	private Set<Location> deadlocks;
 	private Map<TunnelStart, Location> tunnels;
+	private List<ForwardsGameState.GoalArea> goalAreas;
 	
 	public Board(char[][] board, Set<Goal> goals, char goalChar) {
 		this.board = board;
@@ -17,6 +20,7 @@ public class Board {
 		this.goalChar = goalChar;
 		deadlocks = new HashSet<>();
 		tunnels = new HashMap<>();
+		goalAreas = new ArrayList<>();
 	}
 	
 	public Set<Goal> getGoals() {
@@ -30,6 +34,14 @@ public class Board {
 	public void addTunnel(Location start, Location end, Move direction) {
 		TunnelStart tunnelStart = new TunnelStart(start, direction);
 		tunnels.put(tunnelStart, end);
+	}
+	
+	public void setGoalAreas(List<ForwardsGameState.GoalArea> goalAreas) {
+		this.goalAreas = goalAreas;
+	}
+	
+	public List<ForwardsGameState.GoalArea> getGoalAreas() {
+		return goalAreas;
 	}
 	
 	public boolean isFree(Location l) {

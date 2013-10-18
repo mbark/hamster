@@ -7,7 +7,7 @@ public class BackwardSolution extends AbstractSolution {
 	
 	@Override public Solution getForwardSolution() {
 		Solution forward = new ForwardSolution();
-		for (Iterator<Deque<Move>> outer = path.descendingIterator(); outer.hasNext();) {
+		for (Iterator<Deque<Move>> outer = getPath().descendingIterator(); outer.hasNext();) {
 			Deque<Move> moveBatch = outer.next();
 			Deque<Move> forwardBatch = new LinkedList<>();
 			for (Iterator<Move> inner = moveBatch.descendingIterator(); inner.hasNext();)
@@ -20,7 +20,7 @@ public class BackwardSolution extends AbstractSolution {
 	// toString is the char representation of the move sequence
 	@Override public String toString() {
 		StringBuilder sb = new StringBuilder();
-		for (Iterator<Deque<Move>> outer = path.descendingIterator(); outer.hasNext();) {
+		for (Iterator<Deque<Move>> outer = getPath().descendingIterator(); outer.hasNext();) {
 			Deque<Move> moveBatch = outer.next();
 			for (Iterator<Move> inner = moveBatch.descendingIterator(); inner.hasNext();)
 				sb.append(inner.next().inverse().toChar());

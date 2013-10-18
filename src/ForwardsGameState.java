@@ -1,7 +1,5 @@
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Deque;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -18,6 +16,8 @@ public class ForwardsGameState extends AbstractGameState {
 	public static final char BOX = '$';
 	public static final char BOX_ON_GOAL = '*';
 	private static final int MAX_GOAL_AREA_SIZE = 35;
+	
+	private static final Set<Box> finishedBoxes = new HashSet<>();
 	
 	ForwardsGameState (Board board, Player player, Set<Box> boxes) {
 		super(board, player, boxes);
@@ -40,9 +40,11 @@ public class ForwardsGameState extends AbstractGameState {
 
 		List<BoxMove> possibleBoxMoves = new ArrayList<>();
 		for (Box box : boxes) {
-			List<Move> possibleMoves = getPossibleMoves(box);
-			for (Move move : possibleMoves)
-				possibleBoxMoves.add (new BoxMove(box, move));
+			if (!finishedBoxes.contains(box)) {
+				List<Move> possibleMoves = getPossibleMoves(box);
+				for (Move move : possibleMoves)
+					possibleBoxMoves.add (new BoxMove(box, move));
+			}
 		}
 		
 		// this generates BoxMoves mapped to the paths they would require
@@ -261,6 +263,7 @@ public class ForwardsGameState extends AbstractGameState {
 		}
 		
 		List<GoalArea> goalAreas = findGoalAreas(gameBoard, entrances);
+		gameBoard.setGoalAreas(goalAreas);
 		
 		findTunnels(entrances, gameBoard, goalAreas);
 		
@@ -512,13 +515,35 @@ public class ForwardsGameState extends AbstractGameState {
 		return sb.toString();
 	}
 	
+	@Override public List<GameState> tryGoalMacro() {
+		//Try to find a box that can be reached by the player and is located on a goal area entrance
+		//If there is such a box, make the goal macro and check which state
+		if (board.getGoalAreas() != null) {
+			for (GoalArea goalArea : board.getGoalAreas()) {
+				for (Box box : boxes) {
+					if (box.getLocation().equals(goalArea.getEntrance())) {
+						GameState dummy = getPlayerMoveGameState(goalArea.getInitialPlayerLocation());
+						if (dummy != null) {
+							Deque<Move> pathToEntrance = dummy.getMovesToHere();
+							if (pathToEntrance != null)
+								return goalArea.performMacro(this, box, pathToEntrance);
+						}
+					}
+				}
+			}
+		}
+		return null;
+	}
+	
 	public static final class GoalArea {
 		private Board board;
 		private Set<Location> squaresInArea;
 		private Location initialPlayerLocation;
 		private Location entrance;
 		private Set<Goal> goals;
-		private List<Deque<Move>> pathsToGoals;
+		private List<Solution> solutionsToGoals;
+		private List<List<Player>> playerPositionsInSolutions;
+		private List<List<Box>> boxPositionsInSolutions;
 		private int freeGoalsLeft;
 		
 		public GoalArea(Board board, Location playerLocation, Location entrance, 
@@ -529,37 +554,75 @@ public class ForwardsGameState extends AbstractGameState {
 			this.goals = goals;
 			this.squaresInArea = squaresInArea;
 			freeGoalsLeft = goals.size();
-			pathsToGoals = findPathsToGoal(goals);
+			playerPositionsInSolutions = new ArrayList<>();
+			boxPositionsInSolutions = new ArrayList<>();
+			calculateSolutions();
 		}
 		
-		private List<Deque<Move>> findPathsToGoal(Set<Goal> goalsLeft) {
-			List<Deque<Move>> paths = new ArrayList<>();
+		private void calculateSolutions() {
+			solutionsToGoals = findSolutionToGoals(goals);
+			for (Solution s : solutionsToGoals) {
+				if (s != null) {
+					List<Player> playerList = new ArrayList<>();
+					List<Box> boxList = new ArrayList<>();
+					Player player = new Player(initialPlayerLocation);
+					Box newBox = new Box(entrance);
+//					System.out.println(s);
+					for (Deque<Move> path : s.getPath()) {
+						for (Move m : path) {
+							player = player.move(m);
+						}
+						playerList.add(player);
+						if (!path.isEmpty())
+							newBox = newBox.move(path.getLast());
+						boxList.add(newBox);
+					}
+					playerPositionsInSolutions.add(playerList);
+					boxPositionsInSolutions.add(boxList);
+				}
+			}
+		}
+		
+		private List<Solution> findSolutionToGoals(Set<Goal> goalsLeft) {
+			List<Solution> solutions = new ArrayList<>();
 			for (Goal goal : goalsLeft) {
-				Deque<Move> pathToThisGoal = findGoalMacroPath(goalsLeft, goal, entrance);
-				if (pathToThisGoal != null) {
+				Solution solutionToThisGoal = findGoalMacroSolution(goalsLeft, goal, entrance);
+				if (solutionToThisGoal != null) {
+					if (goalsLeft.size() == 1) {
+						solutions.add(solutionToThisGoal);
+						return solutions;
+					}
 					Set<Goal> restOfGoals = new HashSet<>(goalsLeft);
 					restOfGoals.remove(goal);
-					List<Deque<Move>> pathsForRestOfGoals = findPathsToGoal(restOfGoals);
-					if (pathsForRestOfGoals != null) {
-						paths.add(pathToThisGoal);
-						paths.addAll(pathsForRestOfGoals);
-						return paths;
+					List<Solution> solutionsForRestOfGoals = findSolutionToGoals(restOfGoals);
+					if (solutionsForRestOfGoals != null) {
+						solutions.add(solutionToThisGoal);
+						solutions.addAll(solutionsForRestOfGoals);
+						return solutions;
 					}
 				}
 			}
 			return null;
 		}
 
-		private Deque<Move> findGoalMacroPath(Set<Goal> goalsLeft, Goal goal, Location entrance) {
+		private Solution findGoalMacroSolution(Set<Goal> goalsLeft, Goal goal, Location entrance) {
 			char[][] dummyBoardMatrix = board.getBoardMatrix();
 			for (Goal g : goals) {
 				char type = GOAL;
-				if (!g.equals(goal))
+				if (!g.equals(goal)) {
 					type = FREE_SPACE;
-				if (goalsLeft.contains(g))
-					type = WALL;
+					if (goalsLeft.contains(g))
+						type = WALL;
+				}
 				dummyBoardMatrix[g.getLocation().getRow()][g.getLocation().getCol()] = type;
 			}
+//			for (char[] row : dummyBoardMatrix) {
+//				StringBuilder sb = new StringBuilder();
+//				for (char c : row) {
+//					sb.append(c);
+//				}
+//				System.out.println(sb.toString());
+//			}
 			Set<Goal> thisGoal = new HashSet<>();
 			thisGoal.add(goal);
 			Board dummyBoard = new Board(dummyBoardMatrix, thisGoal, GOAL);
@@ -569,8 +632,7 @@ public class ForwardsGameState extends AbstractGameState {
 			GameState dummyGameState = new ForwardsGameState(dummyBoard, dummyPlayer, dummyBox);
 			AStarAlgorithm pathFinder = new AStarAlgorithm(dummyGameState);
 			while(pathFinder.nextStep());
-			Solution s = pathFinder.getSolution();
-			return (s != null) ? s.asDeque() : null;
+			return pathFinder.getSolution();
 		}
 		
 		public Location getInitialPlayerLocation() {
@@ -581,12 +643,42 @@ public class ForwardsGameState extends AbstractGameState {
 			return entrance;
 		}
 		
-		public Deque<Move> getNextSequence() {
+		public List<GameState> performMacro(GameState current, Box boxToMove, 
+				Deque<Move> movesToInitialPosition) {
+//			System.out.println("Call to perform");
+//			int freeGoalsLeft = getFreeGoalsLeft(current);
 			if (freeGoalsLeft > 0) {
 				freeGoalsLeft--;
-				return pathsToGoals.get(freeGoalsLeft);
+				List<GameState> path = new ArrayList<>();
+				Solution solution = solutionsToGoals.get(freeGoalsLeft);
+				Deque<Deque<Move>> solutionPath = solution.getPath();
+//				System.out.println("Performing goal macro: " + solution.toString());
+				int i = 0;
+				Box newBox = boxToMove;
+				for (Deque<Move> movesToHere : solutionPath) {
+					if (i > 0) {
+						if (i == 1) {
+							movesToInitialPosition.addAll(movesToHere);
+							movesToHere = movesToInitialPosition;
+						}
+						Player player = playerPositionsInSolutions.get(freeGoalsLeft).get(i);
+						Set<Box> newBoxes = new HashSet<>(current.getBoxes());
+						newBoxes.remove(boxToMove);
+						newBox = boxPositionsInSolutions.get(freeGoalsLeft).get(i);
+						newBoxes.add(newBox);
+						path.add(new ForwardsGameState(board, player, newBoxes, movesToHere));
+					}
+					i++;
+				}
+				finishedBoxes.add(newBox);//TODO Does this work? Maybe non-static and copied from parent gamestate?
+				return path;
 			}
-			return null;//TODO Should return empty Deque instead?
+			return null;
+		}
+		
+		private int getFreeGoalsLeft(GameState current) {
+			//TODO //If non-static finished boxes -> goals.size - finished.size
+			return 0;
 		}
 	}
 }

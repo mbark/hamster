@@ -49,6 +49,22 @@ public class AStarAlgorithm {
 
 		closedSet.add(current);
 		visitedNodes.add(current);
+		
+		List<GameState> goalMacro = current.tryGoalMacro();
+		if (goalMacro != null) {
+			GameState previousState = current;
+			int cost = 1;
+			for (GameState state : goalMacro) {
+				visitedNodes.add(state);
+				closedSet.add(state);
+				cameFrom.put(state, previousState);
+				gScore.put(state, gScore.get(current) + cost);
+				fScore.put(state, estimatedTotalCost(state, gScore));
+				previousState = state;
+				cost++;
+			}
+			current = previousState;
+		}
 
 		List<GameState> nextStates = current.getNextBoxStates();
 		for(GameState neighbor : nextStates) {
