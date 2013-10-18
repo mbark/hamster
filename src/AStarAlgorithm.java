@@ -122,12 +122,12 @@ public class AStarAlgorithm {
 	}
 	
 	private GameState findCorrespondingKey (GameState key) {
-		for (Map.Entry<GameState, GameState> e : cameFrom.entrySet())
-			if (e.getKey().equals(key))
-				return e.getKey();
-		for (Map.Entry<GameState, GameState> e : cameFrom.entrySet())
-			if (e.getKey().getBoxes().equals(key.getBoxes()))
-				return e.getKey();
+		for (GameState corrKey : cameFrom.keySet())
+			if (corrKey.equals(key))
+				return corrKey;
+		for (GameState corrKey : cameFrom.keySet())
+			if (corrKey.getBoxes().equals(key.getBoxes()))
+				return corrKey;
 		return null;
 	}
 	
