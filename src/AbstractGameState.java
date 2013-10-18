@@ -17,6 +17,7 @@ public abstract class AbstractGameState implements GameState {
 	
 	protected final Player player;
 	protected final Set<Box> boxes;
+	protected final Set<Box> movableBoxes; 
 	
 	private Location topLeftmostCorner = null;
 
@@ -25,19 +26,18 @@ public abstract class AbstractGameState implements GameState {
 	}
 
 	AbstractGameState(Board board, Player player, Set<Box> boxes, Move lastMove) {
-		this.board = board;
-		this.player = player;
-		this.boxes = boxes;
-		this.movesToHere = new LinkedList<>();
-		movesToHere.addFirst(lastMove);
-		if (player != null)
-			topLeftmostCorner = findTopLeftmostCorner ();
+		this (board, player, boxes, new LinkedList<Move>(Collections.singletonList(lastMove)));
 	}
 
 	AbstractGameState(Board board, Player player, Set<Box> boxes, Deque<Move> movesToHere) {
+		this (board, player, boxes, new HashSet<Box> (boxes), movesToHere);
+	}
+	
+	AbstractGameState(Board board, Player player, Set<Box> boxes, Set<Box> movableBoxes, Deque<Move> movesToHere) {
 		this.board = board;
 		this.player = player;
 		this.boxes = boxes;
+		this.movableBoxes = movableBoxes;
 		this.movesToHere = movesToHere;
 		if (player != null)
 			topLeftmostCorner = findTopLeftmostCorner ();
