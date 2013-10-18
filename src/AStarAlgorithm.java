@@ -13,6 +13,10 @@ import java.util.TreeSet;
  */
 public class AStarAlgorithm {
 
+	private static final int GOAL_DISTANCE_WEIGHT = 40;
+	private static final int MOVE_WEIGHT = 5;
+	private static final int STATE_DIFFERENCE_WEIGHT = 40;
+	
 	final Map<GameState, GameState> cameFrom = new HashMap<>();
 	final Map<GameState, Integer> gScore  = new HashMap<>();
 	final Map<GameState, Integer> fScore = new HashMap<>();
@@ -167,7 +171,7 @@ public class AStarAlgorithm {
 		int nrOfMoves = currentState.getMovesToHere().size();
 		int distanceToOther =
 				otherAStar == null ? 0 : currentState.difference(otherAStar.current);
-		return 40 * distanceToGoal + 5 * nrOfMoves + 80 * distanceToOther;
+		return GOAL_DISTANCE_WEIGHT * distanceToGoal + MOVE_WEIGHT * nrOfMoves + STATE_DIFFERENCE_WEIGHT * distanceToOther;
 	}
 	
 	private Comparator<GameState> getComparator() {
