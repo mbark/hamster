@@ -204,6 +204,7 @@ public class ForwardsGameState extends AbstractGameState {
 		
 		Board gameBoard = new Board(board, goals, GOAL);
 		preprocess(gameBoard);
+		
 		return new ForwardsGameState(gameBoard, player, boxes);
 	}
 	
@@ -566,8 +567,9 @@ public class ForwardsGameState extends AbstractGameState {
 			Set<Box> dummyBox = new HashSet<>();
 			dummyBox.add(new Box( new Location(entrance.getCol(), entrance.getRow())));
 			GameState dummyGameState = new ForwardsGameState(dummyBoard, dummyPlayer, dummyBox);
-			PathFindingAlgorithm pathFinder = new AStarAlgorithm(null, null, null, null);
-			Solution s = pathFinder.findPathToGoal(dummyGameState);
+			AStarAlgorithm pathFinder = new AStarAlgorithm(dummyGameState);
+			while(pathFinder.nextStep());
+			Solution s = pathFinder.getSolution();
 			return (s != null) ? s.asDeque() : null;
 		}
 		

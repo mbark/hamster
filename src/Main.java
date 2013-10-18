@@ -3,70 +3,43 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.BrokenBarrierException;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicReference;
 
 
 public class Main {
 	
-	private static final ExecutorService executor = Executors.newFixedThreadPool(2);
 	
-	@SuppressWarnings("unused")
-	private static final PathFindingAlgorithm 	BFS = new BfsAlgorithm(),
-												A_STAR = new AStarAlgorithm(null, null, null, null);
-	
-	public static final void main(String[] args) throws IOException {
+	public static final void main2(String[] args) throws IOException {
 		List<String> boardStrings = read();
-		GameState gs = ForwardsGameState.calculateBoard(boardStrings);
-		Solution solution = A_STAR.findPathToGoal(gs);
+		GameState gs = BackwardsGameState.calculateBoard(boardStrings);
+		AStarAlgorithm aStar = new AStarAlgorithm(gs);
+		while(!aStar.nextStep());
+		Solution solution = aStar.getSolution();
 		System.out.println(solution);
 	}
 	
-	public static final void main2(String... args) throws IOException, InterruptedException {
-		long t0 = System.currentTimeMillis();
+	public static final void main(String... args) throws IOException {
 		List<String> boardStrings = read();
-		CountDownLatch latch = new CountDownLatch(2);
-		ConcurrentMap<BoxOnlyGameState, GameState> forwardVisited = new ConcurrentHashMap<>();
-		ConcurrentMap<BoxOnlyGameState, GameState> backwardVisited = new ConcurrentHashMap<>();
-		AtomicReference<BoxOnlyGameState> meetingPoint = new AtomicReference<>();
-		final PathFindingAlgorithm forward =
-				new AStarAlgorithm(forwardVisited, backwardVisited, latch, meetingPoint);
-		final PathFindingAlgorithm backward =
-				new AStarAlgorithm(backwardVisited, forwardVisited, latch, meetingPoint);
 		final GameState start = ForwardsGameState.calculateBoard(boardStrings);
 		final GameState goal = BackwardsGameState.calculateBoard(boardStrings);
-		final CyclicBarrier barrier = new CyclicBarrier(2);
-		new Thread (new Runnable() {
-			@Override public void run() {
-				try {
-					forward.findPathToGoal(start, barrier);
-				} catch (InterruptedException | BrokenBarrierException e) {
-					e.printStackTrace();
-				}
-			}
-		}).start();
-		new Thread (new Runnable() {
-			@Override public void run() {
-				try {
-					backward.findPathToGoal(goal, barrier);
-				} catch (InterruptedException | BrokenBarrierException e) {
-					e.printStackTrace();
-				}
-			}
-		}).start();
-		latch.await();
-		Solution forwardSolution = forward.getSolution();
-		Solution backwardSolution = backward.getSolution().getForwardSolution();
-		System.out.println(forwardSolution.toString() + backwardSolution.toString());
 		
-		long t1 = System.currentTimeMillis();
-		System.out.println(t1 - t0);
+		AStarAlgorithm aStarForward = new AStarAlgorithm(start);
+		AStarAlgorithm aStarBackward = new AStarAlgorithm(goal);
+		aStarBackward.setOtherAStar(aStarForward);
+		aStarForward.setOtherAStar(aStarBackward);
+		
+		boolean isDone = false;
+		while(!isDone) {
+			isDone = isDone || aStarBackward.nextStep();
+			isDone = isDone || aStarForward.nextStep();
+		}
+		
+		System.out.println(aStarBackward.rendevouz);
+		System.out.println(aStarForward.rendevouz);
+		
+		Solution forwardSolution = aStarForward.getSolution();
+		Solution backwardSolution = aStarBackward.getSolution().getForwardSolution();
+		
+		System.out.println(forwardSolution.toString() + " " + backwardSolution.toString());
 	}
 	
 	public static List<String> read() throws IOException {
