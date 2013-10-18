@@ -123,8 +123,19 @@ public abstract class AbstractGameState implements GameState {
 		movableBoxes.remove(box);
 	}
 	
-	@Override public int difference(GameState gameState) {
-		return 0; // TODO
+	@Override public int difference (GameState gameState) {
+		int totalDistance = 0;
+		for (Box myBox : boxes) {
+			int shortestDistance = Integer.MAX_VALUE;
+			for (Box otherBox : boxes) {
+				int distance = Location.distance(myBox.getLocation(), otherBox.getLocation());
+				if(distance < shortestDistance) {
+					shortestDistance = distance;
+				}
+			}
+			totalDistance += shortestDistance;
+		}
+		return totalDistance;
 	}
 	
 	protected Map<BoxMove, Deque<Move>> findBackwardsMovePathsBFS (List<BoxMove> possibleBoxMoves) {
