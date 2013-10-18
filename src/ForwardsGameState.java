@@ -30,6 +30,10 @@ public class ForwardsGameState extends AbstractGameState {
 	ForwardsGameState (Board board, Player player, Set<Box> boxes, Deque<Move> movesToHere) {
 		super(board, player, boxes, movesToHere);
 	}
+	
+	ForwardsGameState (Board board, Player player, Set<Box> boxes, Set<Box> movableBoxes, Deque<Move> movesToHere) {
+		super(board, player, boxes, movableBoxes, movesToHere);
+	}
 
 	@Override public boolean isDone() {
 		return boxesAreDone();
