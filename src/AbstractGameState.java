@@ -97,6 +97,48 @@ public abstract class AbstractGameState implements GameState {
 		return totalDistance;
 	}
 	
+	@Override public int difference (GameState gameState) {
+		int totalDistance = 0;
+		for (Box myBox : boxes) {
+			int shortestDistance = Integer.MAX_VALUE;
+			for (Box otherBox : boxes) {
+				int distance = Location.distance(myBox.getLocation(), otherBox.getLocation());
+				if(distance < shortestDistance) {
+					shortestDistance = distance;
+				}
+			}
+			totalDistance += shortestDistance;
+		}
+		return totalDistance;
+	}
+	
+	@Override public int numObstacles() {
+		if (getPlayerLocation() == null)
+			return 0;
+		int totalObstacles = 0;
+		Location playerLocation = getPlayerLocation();
+		Set<Goal> goals = board.getGoals();
+		for (Goal goal : goals) {
+			int goalRow = goal.getLocation().getRow();
+			int goalCol = goal.getLocation().getCol();
+			int playerRow = playerLocation.getRow();
+			int playerCol = playerLocation.getCol();
+			int rowDirection = goalRow - playerRow  > 0 ? 1 : (goalRow - playerRow == 0 ? 0 : -1);
+			int colDirection = goalCol - playerCol > 0 ? 1 : (goalCol - playerCol == 0 ? 0 : -1);
+			while (playerRow != goalRow || playerCol != goalCol) {
+				playerRow += rowDirection;
+				playerCol += colDirection;
+				if (board.charAt(playerRow, playerCol) == WALL)
+					totalObstacles++;
+				if (playerRow == goalRow)
+					rowDirection = 0;
+				if (playerCol == goalCol)
+					colDirection = 0;
+			}
+		}
+		return totalObstacles;
+	}
+	
 	/**
 	 * Examines whether all of the given {@link Location}'s are free from both
 	 * walls and boxes.
@@ -121,21 +163,6 @@ public abstract class AbstractGameState implements GameState {
 	
 	@Override public void markBoxAsFinished(Box box) {
 		movableBoxes.remove(box);
-	}
-	
-	@Override public int difference (GameState gameState) {
-		int totalDistance = 0;
-		for (Box myBox : boxes) {
-			int shortestDistance = Integer.MAX_VALUE;
-			for (Box otherBox : boxes) {
-				int distance = Location.distance(myBox.getLocation(), otherBox.getLocation());
-				if(distance < shortestDistance) {
-					shortestDistance = distance;
-				}
-			}
-			totalDistance += shortestDistance;
-		}
-		return totalDistance;
 	}
 	
 	protected Map<BoxMove, Deque<Move>> findBackwardsMovePathsBFS (List<BoxMove> possibleBoxMoves) {

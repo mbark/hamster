@@ -74,6 +74,10 @@ public class Board {
 		return board[loc.getRow()][loc.getCol()];
 	}
 	
+	public char charAt(int row, int col) {
+		return board[row][col];
+	}
+	
 	public boolean isGoal (Location l) {
 		return getCharForLocation(l) == goalChar;
 	}

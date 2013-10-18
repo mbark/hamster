@@ -13,11 +13,12 @@ public interface GameState {
 	List<GameState> getNextBoxStates ();
 	Deque<Move> getMovesToHere ();
 	int getDistanceToGoal();
+	int difference (GameState gameState);
+	int numObstacles();
 	Set<Box> getBoxes();
 	Location getPlayerLocation ();
 	GameState getPlayerMoveGameState (Location l);
 	List<GameState> tryGoalMacro();
-	int difference (GameState gameState);
 	void markBoxAsFinished (Box box);
 	
 	/**

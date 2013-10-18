@@ -16,6 +16,7 @@ public class AStarAlgorithm {
 	private static final int GOAL_DISTANCE_WEIGHT = 40;
 	private static final int MOVE_WEIGHT = 5;
 	private static final int STATE_DIFFERENCE_WEIGHT = 40;
+	private static final int OBSTACLE_WEIGHT = 30;
 	
 	final Map<GameState, GameState> cameFrom = new HashMap<>();
 	final Map<GameState, Integer> gScore  = new HashMap<>();
@@ -52,7 +53,6 @@ public class AStarAlgorithm {
 		current = openSet.pollFirst();
 		if(canFinish(current))
 			return true;
-
 		closedSet.add(current);
 		visitedNodes.add(current);
 		
@@ -167,11 +167,12 @@ public class AStarAlgorithm {
 	}
 
 	private int estimatedCostToGoal(GameState currentState) {
-		int distanceToGoal = currentState.getDistanceToGoal();
-		int nrOfMoves = currentState.getMovesToHere().size();
-		int distanceToOther =
-				otherAStar == null ? 0 : currentState.difference(otherAStar.current);
-		return GOAL_DISTANCE_WEIGHT * distanceToGoal + MOVE_WEIGHT * nrOfMoves + STATE_DIFFERENCE_WEIGHT * distanceToOther;
+		int cost = currentState.getDistanceToGoal() * GOAL_DISTANCE_WEIGHT;
+		cost += currentState.getMovesToHere().size() * MOVE_WEIGHT;
+		cost += currentState.numObstacles() * OBSTACLE_WEIGHT;
+		cost += (otherAStar == null ? 0 :
+			currentState.difference(otherAStar.current)) * STATE_DIFFERENCE_WEIGHT;
+		return cost;
 	}
 	
 	private Comparator<GameState> getComparator() {
