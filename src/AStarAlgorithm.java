@@ -19,7 +19,8 @@ public class AStarAlgorithm {
 	final Set<GameState> visitedNodes = new HashSet<>();
 	final Set<GameState> closedSet = new HashSet<>();
 	final TreeSet<GameState> openSet = new TreeSet<>(getComparator());
-	private final GameState start;
+	final GameState start;
+	GameState current;
 	
 	private boolean isDone = false;
 	GameState rendevouz = null;
@@ -32,6 +33,7 @@ public class AStarAlgorithm {
 		fScore.put(start, estimatedTotalCost(start, gScore));
 		openSet.add(start);
 		cameFrom.put(start, null);
+		current = start;
 	}
 	
 	public void setOtherAStar(AStarAlgorithm aStar) {
@@ -43,7 +45,7 @@ public class AStarAlgorithm {
 			return true;
 		}
 		
-		GameState current = openSet.pollFirst();
+		current = openSet.pollFirst();
 		if(canFinish(current))
 			return true;
 
@@ -163,7 +165,9 @@ public class AStarAlgorithm {
 	private int estimatedCostToGoal(GameState currentState) {
 		int distanceToGoal = currentState.getDistanceToGoal();
 		int nrOfMoves = currentState.getMovesToHere().size();
-		return 40 * distanceToGoal + 5 * nrOfMoves;
+		int distanceToOther =
+				otherAStar == null ? 0 : currentState.difference(otherAStar.current);
+		return 40 * distanceToGoal + 5 * nrOfMoves + 20 * distanceToOther;
 	}
 	
 	private Comparator<GameState> getComparator() {

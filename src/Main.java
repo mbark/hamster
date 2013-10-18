@@ -8,7 +8,7 @@ import java.util.List;
 public class Main {
 	
 	
-	public static final void main(String[] args) throws IOException {
+	public static final void main2(String[] args) throws IOException {
 		List<String> boardStrings = read();
 		GameState gs = ForwardsGameState.calculateBoard(boardStrings);
 		AStarAlgorithm aStar = new AStarAlgorithm(gs);
@@ -17,7 +17,7 @@ public class Main {
 		System.out.println(solution);
 	}
 	
-	public static final void main2(String... args) throws IOException {
+	public static final void main(String... args) throws IOException {
 		List<String> boardStrings = read();
 		final GameState start = ForwardsGameState.calculateBoard(boardStrings);
 		final GameState goal = BackwardsGameState.calculateBoard(boardStrings);
@@ -29,6 +29,7 @@ public class Main {
 		
 		boolean isDone = false;
 		while(!isDone) {
+			isDone = isDone || aStarBackward.nextStep();
 			isDone = isDone || aStarBackward.nextStep();
 			isDone = isDone || aStarForward.nextStep();
 		}
