@@ -167,7 +167,7 @@ public class AStarAlgorithm {
 		int nrOfMoves = currentState.getMovesToHere().size();
 		int distanceToOther =
 				otherAStar == null ? 0 : currentState.difference(otherAStar.current);
-		return 40 * distanceToGoal + 5 * nrOfMoves + 20 * distanceToOther;
+		return 40 * distanceToGoal + 5 * nrOfMoves + 80 * distanceToOther;
 	}
 	
 	private Comparator<GameState> getComparator() {

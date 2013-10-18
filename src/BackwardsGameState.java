@@ -93,6 +93,8 @@ public class BackwardsGameState extends AbstractGameState {
 				Location start = movedBox.getLocation();
 				List<Move> tunnelPath = start.getLinearPathTo(board.getEndOfTunnel(start, boxMove.move));
 				for (Move tunnelMove : tunnelPath) {
+					if (boxes.contains(new Box(movedPlayer.move(tunnelMove).getLocation())))
+						break;
 					movedPlayer = movedPlayer.move(tunnelMove);
 					movedBox = movedBox.move(tunnelMove);
 					moves.addLast (tunnelMove);
@@ -147,91 +149,6 @@ public class BackwardsGameState extends AbstractGameState {
 		if (isFreeForPlayer(oneLeft, twoLeft))
 			possibleMoves.add(Move.LEFT);
 		return possibleMoves;
-	}
-	
-
-	
-	/**
-	 * Get all the significant {@link BackwardsGameState} instances that are the result
-	 * of one state change in the map.
-	 * 
-	 * @return {@link List} of {@link BackwardsGameState} objects that are
-	 *         "one step away"
-	 */
-	public List<BackwardsGameState> getNextStates() {
-		List<BackwardsGameState> nextStates = new ArrayList<>();
-		// ********** temporary shitty code to calculate next states ***********
-		
-		if(player == null) {
-			for(Box box : boxes) {
-				List<BackwardsGameState> states = getStatesNextToBox(box);
-				nextStates.addAll(states);
-			}
-			return nextStates;
-		}
-
-		nextStates.addAll (move(Move.UP));
-		nextStates.addAll (move(Move.DOWN));
-		nextStates.addAll (move(Move.LEFT));
-		nextStates.addAll (move(Move.RIGHT));
-
-		// *********************************************************************
-		return nextStates;
-	}
-	
-	private List<BackwardsGameState> getStatesNextToBox(Box box) {
-		List<BackwardsGameState> states = new ArrayList<>(4);
-		
-		addIfFree(states, box, Move.UP);
-		addIfFree(states, box, Move.DOWN);
-		addIfFree(states, box, Move.LEFT);
-		addIfFree(states, box, Move.RIGHT);
-		
-		return states;
-	}
-	
-	private void addIfFree(List<BackwardsGameState> states, Box box, Move move) {
-		Location loc = box.getLocation().move(move);
-		if(isFreeForPlayer(loc)) {
-			Player player = new Player(loc);
-			states.add(new BackwardsGameState(board, player, boxes));
-		}
-	}
-
-	// the List thing is a fulhack :( but it works :D maybe :/
-	private List<BackwardsGameState> move(Move move) {
-		Player movedPlayer = player.move(move);
-		if(!isFreeForPlayer(movedPlayer.getLocation())) {
-			return Collections.emptyList();
-		}
-		
-		for (Box box : boxes) {
-			// can't move where there is a box
-			if(box.getLocation().equals(movedPlayer.getLocation())) {
-				return Collections.emptyList();
-			}
-			
-			
-			if(boxCanBePulled(box, player, move)) {
-				// at this point, return two states
-				// one with a moved box, and one with no moved boxes
-				Box moved = box.move(move);
-				Set<Box> movedBoxes = new HashSet<>(boxes);
-				movedBoxes.remove(box);
-				movedBoxes.add(moved);
-				return Arrays.asList(new BackwardsGameState(board, movedPlayer, movedBoxes, move),
-									 new BackwardsGameState(board, movedPlayer, boxes, move));
-			}
-		}
-
-		// at this point, no boxes were moved
-		return Arrays.asList (new BackwardsGameState(board, movedPlayer, boxes, move));
-	}
-	
-	private boolean boxCanBePulled(Box box, Player player, Move move) {
-		// if there is a box in the opposite direction of the move, return true
-		Location inverseLocation = player.getLocation().move(move.inverse());
-		return box.getLocation().equals(inverseLocation);
 	}
 	
 	@Override public boolean isDone() {
