@@ -44,18 +44,14 @@ public class AStarAlgorithm {
 		}
 		
 		GameState current = openSet.pollFirst();
-		if(current.isDone() || hasReachedRendevouz(current)) {
-			isDone = true;
-			rendevouz = current;
-			setRendevouzForOther(current);
+		if(canFinish(current))
 			return true;
-		}
 
 		closedSet.add(current);
 		visitedNodes.add(current);
 		
 		List<GameState> goalMacro = current.tryGoalMacro();
-		if (goalMacro != null) {
+		if (goalMacro != null && !goalMacro.isEmpty()) {
 			GameState previousState = current;
 			int cost = 1;
 			for (GameState state : goalMacro) {
@@ -69,7 +65,10 @@ public class AStarAlgorithm {
 			}
 			current = previousState;
 		}
-
+		
+		if (canFinish(current))
+			return true;
+		
 		List<GameState> nextStates = current.getNextBoxStates();
 		for(GameState neighbor : nextStates) {
 			if(visitedNodes.contains(neighbor)) {
@@ -93,6 +92,16 @@ public class AStarAlgorithm {
 			}
 		}
 		
+		return false;
+	}
+	
+	private boolean canFinish(GameState current) {
+		if(current.isDone() || hasReachedRendevouz(current)) {
+			isDone = true;
+			rendevouz = current;
+			setRendevouzForOther(current);
+			return true;
+		}
 		return false;
 	}
 	
