@@ -747,7 +747,6 @@ public class ForwardsGameState extends AbstractGameState {
 					List<Box> boxList = new ArrayList<>();
 					Player player = new Player(initialPlayerLocation);
 					Box newBox = new Box(entrance);
-					System.out.println(s);
 					for (Deque<Move> path : s.getPath()) {
 						for (Move m : path) {
 							player = player.move(m);
@@ -796,13 +795,6 @@ public class ForwardsGameState extends AbstractGameState {
 				}
 				dummyBoardMatrix[g.getLocation().getRow()][g.getLocation().getCol()] = type;
 			}
-//			for (char[] row : dummyBoardMatrix) {
-//				StringBuilder sb = new StringBuilder();
-//				for (char c : row) {
-//					sb.append(c);
-//				}
-//				System.out.println(sb.toString());
-//			}
 			Set<Goal> thisGoal = new HashSet<>();
 			thisGoal.add(goal);
 			Board dummyBoard = new Board(dummyBoardMatrix, thisGoal, GOAL);
@@ -825,14 +817,12 @@ public class ForwardsGameState extends AbstractGameState {
 		
 		public List<GameState> performMacro(GameState current, Box boxToMove, 
 				Deque<Move> movesToInitialPosition) {
-			System.out.println("Call to perform");
 			int freeGoalsLeft = getFreeGoalsLeft(current);
 			if (freeGoalsLeft > 0) {
 				freeGoalsLeft--;
 				List<GameState> path = new ArrayList<>();
 				Solution solution = solutionsToGoals.get(freeGoalsLeft);
 				Deque<Deque<Move>> solutionPath = solution.getPath();
-				System.out.println("Performing goal macro " + (freeGoalsLeft + 1) + ": "+ solution.toString());
 				int i = 0;
 				Box newBox = boxToMove;
 				GameState lastGameState = current;
