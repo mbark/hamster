@@ -347,6 +347,9 @@ public class ForwardsGameState extends AbstractGameState {
 		
 		while(getChar(board.getBoardMatrix(), wall) == WALL) {
 			deadlocks.add(current);
+			if(getChar(board.getBoardMatrix(), current) == GOAL) {
+				return null;
+			}
 			
 			Corner corner = findCorner(board.getBoardMatrix(), current);
 			if(corner != null) {
@@ -690,7 +693,11 @@ public class ForwardsGameState extends AbstractGameState {
 		StringBuilder sb = new StringBuilder();
 		for (int row = 0; row < matrix.length; row++) {
 			for (int col = 0; col < matrix[row].length; col++) {
-				sb.append(matrix[row][col]);
+				if(board.isDeadlockLocation(new Location(col, row))) {
+					sb.append("X");
+				} else {
+					sb.append(matrix[row][col]);
+				}
 			}
 			sb.append('\n');
 		}
