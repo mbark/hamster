@@ -36,7 +36,7 @@ public class Main {
 		Solution forwardSolution = aStarForward.getSolution();
 		Solution backwardSolution = aStarBackward.getSolution().getForwardSolution();
 		
-		System.out.println(forwardSolution.toString() + backwardSolution.toString());
+		System.out.println(forwardSolution.toString() + " " + backwardSolution.toString());
 	}
 	
 	public static List<String> read() throws IOException {
