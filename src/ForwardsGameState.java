@@ -17,8 +17,6 @@ public class ForwardsGameState extends AbstractGameState {
 	public static final char BOX_ON_GOAL = '*';
 	private static final int MAX_GOAL_AREA_SIZE = 35;
 	
-	private static final Set<Box> finishedBoxes = new HashSet<>();
-	
 	ForwardsGameState (Board board, Player player, Set<Box> boxes) {
 		super(board, player, boxes);
 	}
@@ -43,12 +41,10 @@ public class ForwardsGameState extends AbstractGameState {
 		List<GameState> nextStates = new ArrayList<>();
 
 		List<BoxMove> possibleBoxMoves = new ArrayList<>();
-		for (Box box : boxes) {
-			if (!finishedBoxes.contains(box)) {
-				List<Move> possibleMoves = getPossibleMoves(box);
-				for (Move move : possibleMoves)
-					possibleBoxMoves.add (new BoxMove(box, move));
-			}
+		for (Box box : movableBoxes) {
+			List<Move> possibleMoves = getPossibleMoves(box);
+			for (Move move : possibleMoves)
+				possibleBoxMoves.add (new BoxMove(box, move));
 		}
 		
 		// this generates BoxMoves mapped to the paths they would require
@@ -730,7 +726,6 @@ public class ForwardsGameState extends AbstractGameState {
 		private List<Solution> solutionsToGoals;
 		private List<List<Player>> playerPositionsInSolutions;
 		private List<List<Box>> boxPositionsInSolutions;
-		private int freeGoalsLeft;
 		
 		public GoalArea(Board board, Location playerLocation, Location entrance, 
 				Set<Goal> goals, Set<Location> squaresInArea) {
@@ -739,7 +734,6 @@ public class ForwardsGameState extends AbstractGameState {
 			this.entrance = entrance;
 			this.goals = goals;
 			this.squaresInArea = squaresInArea;
-			freeGoalsLeft = goals.size();
 			playerPositionsInSolutions = new ArrayList<>();
 			boxPositionsInSolutions = new ArrayList<>();
 			calculateSolutions();
@@ -753,7 +747,7 @@ public class ForwardsGameState extends AbstractGameState {
 					List<Box> boxList = new ArrayList<>();
 					Player player = new Player(initialPlayerLocation);
 					Box newBox = new Box(entrance);
-//					System.out.println(s);
+					System.out.println(s);
 					for (Deque<Move> path : s.getPath()) {
 						for (Move m : path) {
 							player = player.move(m);
@@ -817,7 +811,7 @@ public class ForwardsGameState extends AbstractGameState {
 			dummyBox.add(new Box( new Location(entrance.getCol(), entrance.getRow())));
 			GameState dummyGameState = new ForwardsGameState(dummyBoard, dummyPlayer, dummyBox);
 			AStarAlgorithm pathFinder = new AStarAlgorithm(dummyGameState);
-			while(pathFinder.nextStep());
+			while(!pathFinder.nextStep());
 			return pathFinder.getSolution();
 		}
 		
@@ -831,16 +825,17 @@ public class ForwardsGameState extends AbstractGameState {
 		
 		public List<GameState> performMacro(GameState current, Box boxToMove, 
 				Deque<Move> movesToInitialPosition) {
-//			System.out.println("Call to perform");
-//			int freeGoalsLeft = getFreeGoalsLeft(current);
+			System.out.println("Call to perform");
+			int freeGoalsLeft = getFreeGoalsLeft(current);
 			if (freeGoalsLeft > 0) {
 				freeGoalsLeft--;
 				List<GameState> path = new ArrayList<>();
 				Solution solution = solutionsToGoals.get(freeGoalsLeft);
 				Deque<Deque<Move>> solutionPath = solution.getPath();
-//				System.out.println("Performing goal macro: " + solution.toString());
+				System.out.println("Performing goal macro " + (freeGoalsLeft + 1) + ": "+ solution.toString());
 				int i = 0;
 				Box newBox = boxToMove;
+				GameState lastGameState = current;
 				for (Deque<Move> movesToHere : solutionPath) {
 					if (i > 0) {
 						if (i == 1) {
@@ -852,19 +847,29 @@ public class ForwardsGameState extends AbstractGameState {
 						newBoxes.remove(boxToMove);
 						newBox = boxPositionsInSolutions.get(freeGoalsLeft).get(i);
 						newBoxes.add(newBox);
-						path.add(new ForwardsGameState(board, player, newBoxes, movesToHere));
+						lastGameState = new ForwardsGameState(board, player, newBoxes, movesToHere);
+						path.add(lastGameState);
 					}
 					i++;
 				}
-				finishedBoxes.add(newBox);//TODO Does this work? Maybe non-static and copied from parent gamestate?
+				lastGameState.markBoxAsFinished(newBox);
 				return path;
 			}
 			return null;
 		}
 		
 		private int getFreeGoalsLeft(GameState current) {
-			//TODO //If non-static finished boxes -> goals.size - finished.size
-			return 0;
+			int freeGoalsLeft = goals.size();
+			Set<Box> allBoxes = current.getBoxes();
+			for (Goal goal : goals) {
+				for (Box box : allBoxes) {
+					if (goal.getLocation().equals(box.getLocation())) {
+						freeGoalsLeft--;
+						break;
+					}
+				}
+			}
+			return freeGoalsLeft;
 		}
 	}
 }
