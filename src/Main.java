@@ -14,8 +14,6 @@ public class Main {
 		AStarAlgorithm aStar = new AStarAlgorithm(gs);
 		while(!aStar.nextStep());
 		Solution solution = aStar.getSolution();
-		if (solution.toString().trim().isEmpty())
-			throw new IllegalStateException("BÖÖÖÖÖG");
 		System.out.println(solution);
 	}
 	
