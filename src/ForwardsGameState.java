@@ -703,6 +703,8 @@ public class ForwardsGameState extends AbstractGameState {
 		//If there is such a box, make the goal macro and check which state
 		if (board.getGoalAreas() != null) {
 			for (GoalArea goalArea : board.getGoalAreas()) {
+				if (goalArea.solutionsToGoals.isEmpty())
+					continue;
 				for (Box box : boxes) {
 					if (box.getLocation().equals(goalArea.getEntrance())) {
 						GameState dummy = getPlayerMoveGameState(goalArea.getInitialPlayerLocation());
