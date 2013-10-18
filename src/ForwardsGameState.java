@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -766,7 +767,7 @@ public class ForwardsGameState extends AbstractGameState {
 			List<Solution> solutions = new ArrayList<>();
 			for (Goal goal : goalsLeft) {
 				Solution solutionToThisGoal = findGoalMacroSolution(goalsLeft, goal, entrance);
-				if (solutionToThisGoal != null) {
+				if (solutionToThisGoal != null && !solutionToThisGoal.getPath().isEmpty()) {
 					if (goalsLeft.size() == 1) {
 						solutions.add(solutionToThisGoal);
 						return solutions;
@@ -774,14 +775,14 @@ public class ForwardsGameState extends AbstractGameState {
 					Set<Goal> restOfGoals = new HashSet<>(goalsLeft);
 					restOfGoals.remove(goal);
 					List<Solution> solutionsForRestOfGoals = findSolutionToGoals(restOfGoals);
-					if (solutionsForRestOfGoals != null) {
+					if (!solutionsForRestOfGoals.isEmpty()) {
 						solutions.add(solutionToThisGoal);
 						solutions.addAll(solutionsForRestOfGoals);
 						return solutions;
 					}
 				}
 			}
-			return null;
+			return Collections.emptyList();
 		}
 
 		private Solution findGoalMacroSolution(Set<Goal> goalsLeft, Goal goal, Location entrance) {
