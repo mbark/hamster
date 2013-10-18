@@ -11,7 +11,7 @@ public class ForwardSolution extends AbstractSolution {
 	// toString is the char representation of the move sequence
 	@Override public String toString() {
 		StringBuilder sb = new StringBuilder();
-		for (Iterator<Deque<Move>> outer = path.iterator(); outer.hasNext();) {
+		for (Iterator<Deque<Move>> outer = getPath().iterator(); outer.hasNext();) {
 			Deque<Move> moveBatch = outer.next();
 			for (Iterator<Move> inner = moveBatch.iterator(); inner.hasNext();)
 				sb.append(inner.next().toChar());

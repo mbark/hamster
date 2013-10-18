@@ -16,6 +16,9 @@ public interface GameState {
 	Set<Box> getBoxes();
 	Location getPlayerLocation ();
 	GameState getPlayerMoveGameState (Location l);
+	List<GameState> tryGoalMacro();
+	int difference (GameState gameState);
+	void markBoxAsFinished (Box box);
 	
 	/**
 	 * Simple class used to keep track of the move performed on a box.

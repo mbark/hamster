@@ -88,8 +88,17 @@ public class BackwardsGameState extends AbstractGameState {
 			
 			Set<Box> newBoxes = new HashSet<>(boxes);
 			newBoxes.remove(boxMove.box);
-			newBoxes.add(movedBox);
 			moves.addLast (boxMove.move);
+			if (board.isStartOfTunnel(movedBox.getLocation(), boxMove.move)) {
+				Location start = movedBox.getLocation();
+				List<Move> tunnelPath = start.getLinearPathTo(board.getEndOfTunnel(start, boxMove.move));
+				for (Move tunnelMove : tunnelPath) {
+					movedPlayer = movedPlayer.move(tunnelMove);
+					movedBox = movedBox.move(tunnelMove);
+					moves.addLast (tunnelMove);
+				}
+			}
+			newBoxes.add(movedBox);
 			BackwardsGameState state = new BackwardsGameState(board, movedPlayer, newBoxes, moves);
 			nextStates.add (state);
 		}
@@ -337,4 +346,10 @@ public class BackwardsGameState extends AbstractGameState {
 		}
 		return sb.toString();
 	}
+
+	@Override public List<GameState> tryGoalMacro() {
+		return null;//No goal areas in backwards
+	}
+	
+	
 }
