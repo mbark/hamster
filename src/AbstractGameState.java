@@ -119,6 +119,14 @@ public abstract class AbstractGameState implements GameState {
 		return true;
 	}
 	
+	@Override public void markBoxAsFinished(Box box) {
+		movableBoxes.remove(box);
+	}
+	
+	@Override public int difference(GameState gameState) {
+		return 0; // TODO
+	}
+	
 	protected Map<BoxMove, Deque<Move>> findBackwardsMovePathsBFS (List<BoxMove> possibleBoxMoves) {
 		Set<Location> possibleLocations = new HashSet<>();
 		for (BoxMove boxMove : possibleBoxMoves)
