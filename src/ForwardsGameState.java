@@ -1,7 +1,5 @@
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Deque;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -205,7 +203,8 @@ public class ForwardsGameState extends AbstractGameState {
 		Board gameBoard = new Board(board, goals, GOAL);
 		preprocess(gameBoard);
 		
-		return new ForwardsGameState(gameBoard, player, boxes);
+		ForwardsGameState state = new ForwardsGameState(gameBoard, player, boxes);
+		return state;
 	}
 	
 	private static char[][] fillUnreachableLocationsWithWalls(char[][] board, Player player) {
@@ -241,6 +240,7 @@ public class ForwardsGameState extends AbstractGameState {
 	private static Set<Location> preprocess(Board gameBoard) {
 		Set<Location> deadlocks = new HashSet<>();
 		Set<Location> entrances = new HashSet<>();
+		Set<CornerLocation> corners = new HashSet<>();
 		
 		char[][] board = gameBoard.getBoardMatrix();
 		
@@ -254,11 +254,14 @@ public class ForwardsGameState extends AbstractGameState {
 				if(isEntrance(board, current)) {
 					entrances.add(current);
 				}
-				if(isDeadlock(board, current)) {
-					deadlocks.add(current);
+				Corner corner = findCorner(board, current);
+				if(corner != null) {
+					corners.add(new CornerLocation(current, corner));
 				}
 			}
 		}
+		
+		deadlocks = findDeadlocks(gameBoard, corners);
 		
 		List<GoalArea> goalAreas = findGoalAreas(gameBoard, entrances);
 		
@@ -266,13 +269,13 @@ public class ForwardsGameState extends AbstractGameState {
 		
 		gameBoard.setDeadlocks(deadlocks);
 		
-		
 		return deadlocks;
 	}
 	
-	private static boolean isDeadlock(char[][] board, Location current) {
-		if(board[current.getRow()][current.getCol()] == WALL) {
-			return false;
+	private static Corner findCorner(char[][] board, Location current) {
+		char c = getChar(board, current);
+		if(c == WALL || c == GOAL || c == BOX_ON_GOAL || c == PLAYER_ON_GOAL) {
+			return null;
 		}
 		
 		boolean isBlockedUp = isBlocked(board, current.move(Move.UP));
@@ -280,11 +283,188 @@ public class ForwardsGameState extends AbstractGameState {
 		boolean isBlockedLeft = isBlocked(board, current.move(Move.LEFT));
 		boolean isBlockedRight = isBlocked(board, current.move(Move.RIGHT));
 		
-		if(isBlockedUp || isBlockedDown) {
-			return isBlockedLeft || isBlockedRight;
+		Corner corner = Corner.identifyCorner(isBlockedUp, isBlockedDown, isBlockedLeft, isBlockedRight);
+		return corner;
+	}
+	
+	private static Set<Location> findDeadlocks(Board board, Set<CornerLocation> locations) {
+		HashSet<Location> deadlocks = new HashSet<>();
+		for(CornerLocation cornerLocation : locations) {
+			Corner corner = cornerLocation.corner;
+			Set<Location> deadlocksDown = null;
+			Set<Location> deadlocksLeft = null;
+			Set<Location> deadlocksUp = null;
+			Set<Location> deadlocksRight = null;
+			
+			switch(corner) {
+			case UP_RIGHT:
+				deadlocksDown = findDeadlocksInDirection(board, cornerLocation, Move.DOWN, Move.RIGHT);
+				deadlocksLeft = findDeadlocksInDirection(board, cornerLocation, Move.LEFT, Move.UP);
+				break;
+			case UP_LEFT:
+				deadlocksDown = findDeadlocksInDirection(board, cornerLocation, Move.DOWN, Move.LEFT);
+				deadlocksRight = findDeadlocksInDirection(board, cornerLocation, Move.RIGHT, Move.RIGHT);
+				break;
+			case DOWN_RIGHT:
+				deadlocksUp = findDeadlocksInDirection(board, cornerLocation, Move.UP, Move.RIGHT);
+				deadlocksLeft = findDeadlocksInDirection(board, cornerLocation, Move.LEFT, Move.DOWN);
+				break;
+			case DOWN_LEFT:
+				deadlocksUp = findDeadlocksInDirection(board, cornerLocation, Move.UP, Move.LEFT);
+				deadlocksRight = findDeadlocksInDirection(board, cornerLocation, Move.RIGHT, Move.DOWN);
+				break;
+			}
+			
+			deadlocks.add(cornerLocation.location);
+			
+			if(deadlocksDown != null) {
+				deadlocks.addAll(deadlocksDown);
+			}
+			if(deadlocksLeft != null) {
+				deadlocks.addAll(deadlocksLeft);
+			}
+			if(deadlocksRight != null) {
+				deadlocks.addAll(deadlocksRight);
+			}
+			if(deadlocksUp != null) {
+				deadlocks.addAll(deadlocksUp);
+			}
 		}
 		
-		return false;
+		return deadlocks;
+	}
+	
+	private static Set<Location> findDeadlocksInDirection(Board board, CornerLocation cornerLocation, Move direction, Move wallDirection) {
+		Set<Location> deadlocks = new HashSet<>();
+		
+		Location current = cornerLocation.location.move(direction);
+		Location wall = current.move(wallDirection);
+		
+		while(getChar(board.getBoardMatrix(), wall) == WALL) {
+			deadlocks.add(current);
+			
+			Corner corner = findCorner(board.getBoardMatrix(), current);
+			if(corner != null) {
+				Corner oppositeCorner = Corner.opposite(cornerLocation.corner, direction);
+				if(corner == oppositeCorner) {
+					return deadlocks;
+				} else {
+					return null;
+				}
+			}
+			
+			current = current.move(direction);
+			if(isBlocked(board.getBoardMatrix(), current)) {
+				break;
+			}
+			wall = current.move(wallDirection);
+		}
+		
+		return null;
+	}
+	
+	private static final class CornerLocation {
+		Location location;
+		Corner corner;
+		private CornerLocation(Location location, Corner corner) {
+			this.location = location;
+			this.corner = corner;
+		}
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result
+					+ ((location == null) ? 0 : location.hashCode());
+			return result;
+		}
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			CornerLocation other = (CornerLocation) obj;
+			if (location == null) {
+				if (other.location != null)
+					return false;
+			} else if (!location.equals(other.location))
+				return false;
+			return true;
+		}
+	}
+	
+	private static enum Corner {
+		UP_RIGHT(true, false, false, true),
+		UP_LEFT(true, false, true, false),
+		DOWN_RIGHT(false, true, false, true),
+		DOWN_LEFT(false, true, true, false);
+		
+		private final boolean isUpBlocked;
+		private final boolean isDownBlocked;
+		private final boolean isLeftBlocked;
+		private final boolean isRightBlocked;
+		
+		private Corner(boolean isUpBlocked, boolean isDownBlocked, boolean isLeftBlocked, boolean isRightBlocked) {
+			this.isUpBlocked = isUpBlocked;
+			this.isDownBlocked = isDownBlocked;
+			this.isLeftBlocked = isLeftBlocked;
+			this.isRightBlocked = isRightBlocked;
+		}
+		
+		public static Corner identifyCorner(boolean isUpBlocked, boolean isDownBlocked, boolean isLeftBlocked, boolean isRightBlocked) {
+			for(Corner corner : Corner.values()) {
+				boolean isSame = true;
+				isSame = isSame && corner.isUpBlocked == isUpBlocked;
+				isSame = isSame && corner.isDownBlocked == isDownBlocked;
+				isSame = isSame && corner.isRightBlocked == isRightBlocked;
+				isSame = isSame && corner.isLeftBlocked == isLeftBlocked;
+				
+				if(isSame) {
+					return corner;
+				}
+			}
+			return null;
+		}
+		
+		public static Corner opposite(Corner corner, Move direction) {
+//			this code is really bad... Don't kill me please
+			Corner found = null;
+			switch(corner) {
+				case UP_RIGHT:
+					if(direction == Move.DOWN) {
+						found = Corner.DOWN_RIGHT;
+					} else if(direction == Move.LEFT) {
+						found = Corner.UP_LEFT;
+					}
+					break;
+				case UP_LEFT:
+					if(direction == Move.DOWN) {
+						found = Corner.DOWN_RIGHT;
+					} else if(direction == Move.RIGHT) {
+						found = Corner.UP_RIGHT;
+					}
+					break;
+				case DOWN_RIGHT:
+					if(direction == Move.UP) {
+						found = Corner.UP_RIGHT;
+					} else if(direction == Move.LEFT) {
+						found = Corner.DOWN_LEFT;
+					}
+					break;
+				case DOWN_LEFT:
+					if(direction == Move.UP) {
+						found = Corner.UP_LEFT;
+					} else if(direction == Move.RIGHT) {
+						found = Corner.DOWN_RIGHT;
+					}
+					break;
+			}
+			
+			return found;
+		}
 	}
 	
 	private static boolean isBlocked(char[][] board, Location loc) {
