@@ -13,10 +13,11 @@ import java.util.TreeSet;
  */
 public class AStarAlgorithm {
 
-	private static final int GOAL_DISTANCE_WEIGHT = 40;
-	private static final int MOVE_WEIGHT = 5;
-	private static final int STATE_DIFFERENCE_WEIGHT = 40;
-	private static final int OBSTACLE_WEIGHT = 30;
+	private static final int GOAL_DISTANCE_WEIGHT = 10;
+	private static final int MOVE_WEIGHT = 0;
+	private static final int OBSTACLE_WEIGHT = 0;
+	
+	private static final int STATE_DIFFERENCE_WEIGHT = 0;
 	
 	final Map<GameState, GameState> cameFrom = new HashMap<>();
 	final Map<GameState, Integer> gScore  = new HashMap<>();
